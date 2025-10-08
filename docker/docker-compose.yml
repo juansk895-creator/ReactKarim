@@ -17,7 +17,7 @@ services:
       - juan_net
   
   pgadmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:7
     container_name: juan_pgadmin
     restart: always
     environment:
@@ -27,11 +27,14 @@ services:
       - "${PGADMIN_PORT}:80"
     depends_on:
       - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     networks:
       - juan_net
   
 volumes:
   postgres_data:
+  pgadmin_data:
   
 networks:
   juan_net:
