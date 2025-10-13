@@ -1,6 +1,7 @@
 {
   "name": "reactkarim",
   "version": "1.0.0",
+  "type": "module",
   "description": "Testing",
   "main": "index.js",
   "scripts": {
@@ -24,5 +25,10 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "eslint": "^9.37.0",
+    "globals": "^16.4.0"
   }
 }
