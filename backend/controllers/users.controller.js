@@ -87,8 +87,9 @@ async function getUser(req, res) {
         const user = await getUserById(id);
         if (!user) {
             return res.status(404).json({ message: 'No se encontró usuario'});
-            res.json(user);
+            //res.json(user);
         }
+        res.json(user);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error interno'});

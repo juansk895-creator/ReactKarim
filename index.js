@@ -1,7 +1,14 @@
-const express = require("express");
-const cors = require("cors");
-const { Pool } = require("pg");
-require("dotenv").config();
+
+//const express = require("express");
+import express from 'express';
+//const cors = require("cors");
+import cors from 'cors';
+//const { Pool } = require("pg");
+import Pool from "pg";
+//require("dotenv").config();
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
