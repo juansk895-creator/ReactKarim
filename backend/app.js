@@ -12,14 +12,16 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+//middleware base
 app.use(cors());
 app.use(express.json());
 
-//Archivo estático
-app.use(express.static(path.join(__dirname, "public")));
+//Archivo estático, ya no se usa
+//app.use(express.static(path.join(__dirname, "public")));
 
-//app.use('/api/auth', authRoutes);
-app.use('/api', authRoutes);
+//Rutas de API
+//app.use('/api', authRoutes);
+app.use('/api/auth', authRoutes);
 
 //Rutas
 app.get("/api/test", async (req, res) => {
@@ -27,9 +29,14 @@ app.get("/api/test", async (req, res) => {
         const result = await pool.query("SELECT NOW() AS fecha_servidor");
         res.json({ ok: true, data: result.rows[0] });
     } catch (err) {
-        console.error(err);
+        console.error("Error en /api/test:", err);
         res.status(500).json({ ok: false, error: err.message });
     }
+});
+
+//Middleware genérico para rutas no encontradas
+app.use((req, res) => {
+    res.status(404).json({ ok: false, message: "Ruta no encontrada" });
 });
 
 const PORT = process.env.PORT || 3000;

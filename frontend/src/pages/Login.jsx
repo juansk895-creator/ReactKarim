@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-//import { useNavigate } from 'react-router-dom';
-import { useNavigate } from 'react-dom';
+import React, { useState, useContext } from "react";
+import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-dom';
 //import { useAuth } from '../AuthContext'; // Error en el nombre de la importación, 'useAuth' no existe
 import { AuthContext } from '../AuthContext';
-import e, { response } from "express";
+//import e, { response } from "express"; //express no se usa en frontend
 
 export default function Login() {
 
@@ -11,14 +11,14 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
-    const { login } = AuthContext();
+    const { login } = useContext(AuthContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3000/login', {
+            const response = await fetch('http://localhost:4000/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -93,13 +93,3 @@ export default function Login() {
         </div>
     );
 }
-
-
-
-
-
-
-
-
-
-
