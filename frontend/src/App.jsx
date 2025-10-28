@@ -6,7 +6,7 @@ import { MantineProvider } from '@mantine/core';
 
 //Rutas definidas y testeadas
 import Login from "./pages/login";
-import Dashboard from "./pages/dashboard/Dashboard.jsx";
+import Dashboard from "./pages/dashboard/Dashboard";
 //rutas por testear
 
 const PrivateRoute = ({ children }) => {
@@ -25,7 +25,7 @@ export default function App() {
 
                         {/* Ruta privada */}
                         <Route
-                            path="/dashboard"
+                            path="/dashboard/*"
                             element={
                                 //<PrivateRoute>
                                     <Dashboard />
