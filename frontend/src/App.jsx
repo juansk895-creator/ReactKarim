@@ -25,7 +25,7 @@ export default function App() {
 
                         {/* Ruta privada */}
                         <Route
-                            path="/dashboard"
+                            path="/dashboard/*"
                             element={
                                 //<PrivateRoute>
                                     <Dashboard />

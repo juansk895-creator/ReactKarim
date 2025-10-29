@@ -1,3 +1,133 @@
+import React from "react";
+import { AppShell, Box, Text } from "@mantine/core";
+
+export default function Dashboard() {
+  return (
+    <AppShell>
+      <AppShell.Section
+        component="header"
+        style={{
+          backgroundColor: "darkblue",
+          height: 69,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text fw={700} c="white">
+          HEADER
+        </Text>
+      </AppShell.Section>
+
+      <Box style={{ display: "flex", flex: 1, minHeight: "calc(100vh - 110px)" }}>
+        <AppShell.Section
+          component="nav"
+          style={{
+            backgroundColor: "darkred",
+            width: 200,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text fw={700} c="white">
+            NAVBAR
+          </Text>
+        </AppShell.Section>
+        <AppShell.Section
+          component="main"
+          style={{
+            backgroundColor: "darkgreen",
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContect: "center",
+          }}
+        >
+          <Text fw={700} c="white">
+            Main
+          </Text>
+        </AppShell.Section>
+      </Box>
+
+      <AppShell.Section
+        component="footer"
+        style={{
+          backgroundColor: "darkorange",
+          height: 50,
+          display: "flex",
+          alignItems: "center",
+          justifyContect: "center"
+        }}
+      >
+        <Text fw={700} c="white">
+          FOOTER
+        </Text>
+      </AppShell.Section>
+    </AppShell>
+  );
+  /*
+  return (
+    <AppShell
+      header={{ height: 10 }}
+      navbar={{ width: 20, breakpoint: 0 }}
+      footer={{ height: 30 }}
+      padding="md"
+      layout="alt"
+      withBorder={false}
+    >
+      
+      <AppShell.Header
+        style={{
+          backgroundColor: "darkblue",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text fw={700}>HEADER</Text>
+      </AppShell.Header>
+
+      <AppShell.Navbar
+        style={{
+          backgroundColor: "darkred",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text fw={700}>NAVBAR</Text>
+      </AppShell.Navbar>
+
+      <AppShell.Main
+        style={{
+          backgroundColor: "darkgreen",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text fw={700}>MAIN</Text>
+      </AppShell.Main>
+
+      <AppShell.Footer
+        style={{
+          backgroundColor: "darkorange",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text fw={700}>FOOTER</Text>
+      </AppShell.Footer>
+    </AppShell>
+  );*/
+}
+
+
+
+/*
+
 import React, { useState } from "react";
 import { AppShell, NavLink, ActionIcon, Tooltip, Group, useMantineTheme } from "@mantine/core";
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, 
@@ -17,7 +147,7 @@ export default function Dashboard() {
     <AppShell>
       <AppShell.Navbar
         p="sm"
-        bg={theme.colors.gray[0]}
+        bg={theme.colors.gray[9]}
         style={{
           width: collapsed ? 80 : 240,
           height: "100vh",
@@ -43,7 +173,7 @@ export default function Dashboard() {
         </Group>
 
         <Group justify="center">
-          {/* Perfil */}
+          
           <ActionIcon
             variant="subtle"
             color="gray"
@@ -62,7 +192,7 @@ export default function Dashboard() {
               <span style={{ marginLeft: "10px", fontWeight: 500 }}>Perfil</span>
             )}
           </ActionIcon>
-          {/* Usuarios */}
+          
           <ActionIcon
             variant="subtle"
             color="gray"
@@ -80,7 +210,7 @@ export default function Dashboard() {
               <span style={{ marginLeft: "10px", fontWeight: 500 }}>Usuarios</span>
             )}
           </ActionIcon>
-          {/* ESTADÍSTICAS: Gráficas y reportes */}
+          
           <div>
             <ActionIcon
               variant="subtle"
@@ -168,7 +298,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          {/* Historial */}
+          
           <ActionIcon
             variant="subtle"
             color="gray"
@@ -191,3 +321,4 @@ export default function Dashboard() {
     </AppShell>
   );
 }
+*/
