@@ -1,5 +1,8 @@
 import React from "react";
 import { AppShell, Box, Text } from "@mantine/core";
+import ProfileView from "../profile/ProfileView";
+import { Outlet } from "react-router-dom";
+
 
 export default function Dashboard() {
   return (
@@ -7,7 +10,7 @@ export default function Dashboard() {
       <AppShell.Section
         component="header"
         style={{
-          backgroundColor: "darkblue",
+          //backgroundColor: "darkblue",
           height: 69,
           display: "flex",
           alignItems: "center",
@@ -23,7 +26,7 @@ export default function Dashboard() {
         <AppShell.Section
           component="nav"
           style={{
-            backgroundColor: "darkred",
+            //backgroundColor: "darkred",
             width: 200,
             display: "flex",
             alignItems: "center",
@@ -34,26 +37,27 @@ export default function Dashboard() {
             NAVBAR
           </Text>
         </AppShell.Section>
+
         <AppShell.Section
           component="main"
           style={{
-            backgroundColor: "darkgreen",
+            //backgroundColor: "darkgreen",
             flex: 1,
             display: "flex",
             alignItems: "center",
             justifyContect: "center",
+            flexDirection: "column",
           }}
         >
-          <Text fw={700} c="white">
-            Main
-          </Text>
+          
+          <Outlet />
         </AppShell.Section>
       </Box>
 
       <AppShell.Section
         component="footer"
         style={{
-          backgroundColor: "darkorange",
+          //backgroundColor: "darkorange",
           height: 50,
           display: "flex",
           alignItems: "center",

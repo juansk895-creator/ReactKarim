@@ -8,6 +8,7 @@ import { MantineProvider } from '@mantine/core';
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
 //rutas por testear
+import ProfileView from "./pages/profile/ProfileView.jsx";
 
 const PrivateRoute = ({ children }) => {
     const { token } = useContext(AuthContext);
@@ -23,15 +24,11 @@ export default function App() {
                         {/* Ruta pública */}
                         <Route path="/login" element={<Login />} />
 
-                        {/* Ruta privada */}
-                        <Route
-                            path="/dashboard/*"
-                            element={
-                                //<PrivateRoute>
-                                    <Dashboard />
-                                //</PrivateRoute>
-                            }
-                        />
+                        {/* Rutas privada */}
+                        <Route path="/dashboard/*" element={ <Dashboard />}>
+                            {/* Rutas hija */}
+                            <Route path="profile" element={<ProfileView />} />
+                        </Route>
                     </Routes>
                 </Router>
             </AuthProvider>
