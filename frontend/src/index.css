@@ -75,7 +75,7 @@ html, body, #root {
   padding: 0;
 }
 #root {
-  display: flex;
+  display: block;
   flex-direction: column;
 }
 

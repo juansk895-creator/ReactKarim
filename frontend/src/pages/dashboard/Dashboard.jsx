@@ -1,12 +1,99 @@
-import React from "react";
-import { AppShell, Box, Text } from "@mantine/core";
+import React, { useContext, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+//mantine
+import { ActionIcon, AppShell, Box, Button, Collapse, Group, Modal, Portal, Text, Tooltip,
+  Transition, useMantineTheme } from "@mantine/core";
+import { useDisclosure } from '@mantine/hooks';  // Revisar si es necesario al final
+//Íconos
+import { IconLayoutSidebarRightCollapse, IconLayoutSidebarLeftCollapse,
+  IconUserCircle, IconUsers, IconFileText, IconChartBar, IconHistory,
+  IconChevronRight, IconChartPie, IconLogout2, IconXboxX } from "@tabler/icons-react";
+//Archivos
 import ProfileView from "../profile/ProfileView";
-import { Outlet } from "react-router-dom";
+import { AuthContext } from "../../AuthContext";
+import ModalLogoutConfirm from "../../components/ModalLogoutConfirm";
+
+// Componente reutilizable para las opciones de la barra lateral
+export function SidebarItem({
+  icon: Icon, label, collapsed, active, onClick,
+  hasSubmenu = false, expanded = false, disableHover = false, })
+  {
+    const theme = useMantineTheme();
+    const [hovered, setHovered] = useState(false);
+    const baseColor = theme.colorSchema === "dark" ? theme.colors.gray[0] : theme.colors.gray[9];
+    const hoverColor = theme.colorSchema === "dark" ? theme.colors.gray[1] : theme.colors.gray[8];
+    const activeColor = theme.colorSchema === "dark" ? theme.colors.gray[2] : theme.colors.gray[7];
+    return (
+      <ActionIcon
+        variant="subtle"
+        color="gray"
+        size="xl"
+        radius="md"
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: collapsed ? 48 : "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center", // "center" : "center" ?
+          transition: "all 0.5s ease",
+          position: "relative", // "absolute" ?
+          backgroundColor: active ? activeColor : hovered ? hoverColor : baseColor,
+          cursor: "pointer",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            position: "center",
+            left: hasSubmenu ? "-0.4rem" : 0, // realmente compensa ?
+          }}
+        >
+          <Icon stroke={2} size="1.3rem" />
+          {!collapsed && <span style={{ fontWeight: 500 }}>{label}</span>}
+        </div>
+        {!collapsed && hasSubmenu && (
+          <IconChevronRight size="1.1rem" stroke={2}
+            style={{
+              position: "absolute",
+              right: "0.8rem",
+              top: "30%",
+              transition: "transform 0.5s ease",
+              transform: expanded ? "rotate(90deg)" : "rotate(0deg)",
+            }}
+          />
+        )}
+      </ActionIcon>
+    );
+  }
 
 
+// Componente base del Dashboard
 export default function Dashboard() {
+
+  // Revisar const innecesarias
+  const theme = useMantineTheme();
+  const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [activeItem, setActiveItem] = useState("");
+  const [activeSection, setActiveSection] = useState("");
+  const ToggleIcon = collapsed ? IconLayoutSidebarRightCollapse : IconLayoutSidebarLeftCollapse;
+
+  const { logout } = useContext(AuthContext);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const handleConfirmLogout = () => {
+    logout();
+    setLogoutOpen(false);
+    navigate('/login');
+  };
+
   return (
     <AppShell>
+      {/* header*/}
       <AppShell.Section
         component="header"
         style={{
@@ -14,30 +101,194 @@ export default function Dashboard() {
           height: 69,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          //justifyContent: "center",
+          justifyContent: "space-between",
+          padding: "0 1rem", //Revisar ajuste
+          backgroundColor: theme.colors.dark[7], //Revisar tono
         }}
       >
-        <Text fw={700} c="white">
-          HEADER
+        <Text fw={500} >
+          GESTIÓN DE USUARIOS
         </Text>
-      </AppShell.Section>
 
-      <Box style={{ display: "flex", flex: 1, minHeight: "calc(100vh - 110px)" }}>
+        {/* Cerrar <ModalLogoutConfirm /> sesión */}
+        <Tooltip
+          label="Cerrar sesión"
+          //position="bottom-end"
+          withinPortal={false}
+          style={{ display: "inline-flex" }}
+        >
+          <ActionIcon
+            variant="subtle"
+            //size="lg"
+            
+            onClick={() => setLogoutOpen(true)}
+            style={{
+              backgroundColor: theme.colors.gray[9],
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onMouseEnter={(e) => {
+              const icon = e.currentTarget.querySelector("svg");
+              if (icon) icon.style.color = theme.colors.red[9];
+            }}
+            onMouseLeave={(e) => {
+              const icon = e.currentTarget.querySelector("svg");
+              if (icon) icon.style.color = theme.colors.red[1];
+            }}
+          >
+            <IconLogout2 stroke={2} />
+          </ActionIcon>
+        </Tooltip>
+
+      </AppShell.Section>        
+          
+      {/* navbar & main */}
+      <Box
+        style={{
+          display: "flex",
+          flex: 1,
+          minHeight: "calc(100vh - 110px)",
+        }}
+      >
+        {/* navbar */}
         <AppShell.Section
           component="nav"
           style={{
-            //backgroundColor: "darkred",
-            width: 200,
+            //backgroundColor: "darkred", //Revisar qué área se reserva para cada sección
+            width: collapsed ? 64 : 200,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "stretch",
+            padding: "1rem 0.5rem",
+            gap: "1rem",
           }}
         >
-          <Text fw={700} c="white">
-            NAVBAR
-          </Text>
-        </AppShell.Section>
+          <Group
+            //justify="center"
+            mb="md"
+            style={{
+              //flexShrink: 0,
+              //width: "100%",
+              //position: "sticky",
+              //top: 0,
+              //zIndex: 2,
+              display: "flex",
+              justifyContent: "center", //collapsed ? "flex-end" : "flex-start",
+              //padding: "0 0.5rem",
+              width: 48,
+            }}
+          >
+            <SidebarItem
+              icon={ToggleIcon}
+              label={undefined}
+              collapsed={collapsed}
+              active={false}
+              hasSubmenu={false}
+              expanded={false}
+              disableHover
+              onClick={() => setCollapsed((prev) => !prev)}
+              style={{
+                width: 48,
+              }}
+            />
+          </Group>
 
+          <Group
+            //direction="column"
+            //gap="sm"
+            justify="center"
+            style={{
+              gap: "1rem",
+              
+            }}
+          >
+            <SidebarItem
+              icon={IconUserCircle}
+              label="Perfil"
+              collapsed={collapsed}
+              active={activeItem === "perfil"}
+              onClick={() => {
+                setActiveItem("perfil");
+                setShowStats((prev) => false);
+              }}
+            />
+
+            <SidebarItem
+              icon={IconUsers}
+              label="Usuarios"
+              collapsed={collapsed}
+              active={activeItem === "usuarios"}
+              onClick={() => {
+                setActiveItem("usuarios");
+                setShowStats((prev) => false);
+              }}
+            />
+
+            <SidebarItem
+              icon={IconChartBar}
+              label="Estadísticas"
+              collapsed={collapsed}
+              active={activeItem === "estadísticas"}
+              hasSubmenu
+              expanded={showStats}
+              onClick={() => {
+                setActiveItem("estadísticas");
+                setShowStats((prev) => !prev);
+              }}
+            />
+            {/* submenú */}
+            {showStats && !collapsed && (
+              <Transition
+                mounted={showStats && !collapsed}
+                transition="slide-down"
+                duration={4000}
+                timingFunction="ease"
+              >
+                {(styles) => (
+                  <div style={styles}>
+                
+                <Group
+                  direction="column"
+                  gap="sm"
+                  pl={collapsed ? 0: "2rem"}
+                >
+                  <SidebarItem
+                    icon={IconChartPie}
+                    label="Gráficas"
+                    collapsed={collapsed}
+                    active={activeItem === "graficas"}
+                    onClick={() => setActiveItem("graficas")}
+                  />
+
+                  <SidebarItem
+                    icon={IconFileText}
+                    label="Reportes"
+                    collapsed={collapsed}
+                    active={activeItem === "reportes"}
+                    onClick={() => setActiveItem("reportes")}
+                  />
+                </Group>
+                </div>
+                )}
+              </Transition>
+            )}
+
+            <SidebarItem
+              icon={IconHistory}
+              label="Historial"
+              collapsed={collapsed}
+              active={activeItem === "historial"}
+              onClick={() => {
+                setActiveItem("historial");
+                setShowStats((prev) => false);
+              }}
+            />
+          </Group>
+
+        </AppShell.Section>
+        {/* main */}
         <AppShell.Section
           component="main"
           style={{
@@ -45,15 +296,20 @@ export default function Dashboard() {
             flex: 1,
             display: "flex",
             alignItems: "center",
-            justifyContect: "center",
-            flexDirection: "column",
+            justifyContent: "center",
+            flexDirection: "column", //cambiar ubicación dentro del main
           }}
         >
+          <ModalLogoutConfirm
+            opened={logoutOpen}
+            onClose={() => setLogoutOpen(false)}
+            onConfirm={handleConfirmLogout}
+          />
+          <Outlet />          
           
-          <Outlet />
         </AppShell.Section>
       </Box>
-
+      {/* footer */}
       <AppShell.Section
         component="footer"
         style={{
@@ -61,268 +317,15 @@ export default function Dashboard() {
           height: 50,
           display: "flex",
           alignItems: "center",
-          justifyContect: "center"
+          justifyContent: "center"
         }}
       >
         <Text fw={700} c="white">
           FOOTER
         </Text>
       </AppShell.Section>
-    </AppShell>
-  );
-  /*
-  return (
-    <AppShell
-      header={{ height: 10 }}
-      navbar={{ width: 20, breakpoint: 0 }}
-      footer={{ height: 30 }}
-      padding="md"
-      layout="alt"
-      withBorder={false}
-    >
       
-      <AppShell.Header
-        style={{
-          backgroundColor: "darkblue",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text fw={700}>HEADER</Text>
-      </AppShell.Header>
-
-      <AppShell.Navbar
-        style={{
-          backgroundColor: "darkred",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text fw={700}>NAVBAR</Text>
-      </AppShell.Navbar>
-
-      <AppShell.Main
-        style={{
-          backgroundColor: "darkgreen",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text fw={700}>MAIN</Text>
-      </AppShell.Main>
-
-      <AppShell.Footer
-        style={{
-          backgroundColor: "darkorange",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text fw={700}>FOOTER</Text>
-      </AppShell.Footer>
-    </AppShell>
-  );*/
-}
-
-
-
-/*
-
-import React, { useState } from "react";
-import { AppShell, NavLink, ActionIcon, Tooltip, Group, useMantineTheme } from "@mantine/core";
-import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, 
-  IconUsers, IconUserCircle, IconChartHistogram, IconReport,
-  IconChartPie, IconFiles, IconChevronRight } from "@tabler/icons-react";
-
-
-
-export default function Dashboard() {
-  const [collapsed, setCollapsed] = useState(false);
-  const [showStats, setShowStats] = useState(false);
-  const theme = useMantineTheme();
-
-  const toggleCollapse = () => setCollapsed((prev) => !prev);
-
-  return (
-    <AppShell>
-      <AppShell.Navbar
-        p="sm"
-        bg={theme.colors.gray[9]}
-        style={{
-          width: collapsed ? 80 : 240,
-          height: "100vh",
-          transition: "width 0.2s ease",
-          overflow: "hidden",
-        }}
-      >
-
-        <Group justify="center" mb="md">
-          <ActionIcon
-            variant="light"
-            color="gray"
-            onClick={toggleCollapse}
-            size="lg"
-            aria-label="Toggle sidebar"
-          >
-            {collapsed ? (
-              <IconLayoutSidebarLeftExpand size="1.2rem" />
-            ) : (
-              <IconLayoutSidebarLeftCollapse size="1.2rem" />
-            )}
-          </ActionIcon>
-        </Group>
-
-        <Group justify="center">
-          
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="xl"
-            radius="md"
-            onClick={() => console.log("Sección Perfil")}
-            style={{
-              width: collapsed ? 48 : "100%",
-              justifyContent: collapsed ? "center" : "flex-start",
-              transition: "all 0.2ease",
-              // Resaltar al dar clic
-            }}
-          >
-            <IconUserCircle stroke={2} size="1.3rem" />
-            {!collapsed && (
-              <span style={{ marginLeft: "10px", fontWeight: 500 }}>Perfil</span>
-            )}
-          </ActionIcon>
-          
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="xl"
-            radius="md"
-            onClick={() => console.log("Sección Usuarios seleccionada")}
-            style={{
-              width: collapsed ? 48 : "100%",
-              justifyContent: collapsed ? "center" : "flex-start",
-              transition: "all 0.2ease",
-            }}
-          >
-            <IconUsers stroke={2} size="1.3rem" />
-            {!collapsed && (
-              <span style={{ marginLeft: "10px", fontWeight: 500 }}>Usuarios</span>
-            )}
-          </ActionIcon>
-          
-          <div>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="xl"
-              radius="md"
-              onClick={() => setShowStats((prev) => !prev)}
-              style={{
-                width: collapsed ? 48 : "100%",
-                //justifyContent: collapsed ? "center" : "flex-start",
-                justifyContent: collapsed ? "center" : "center",
-                transition: "all 0.2ease",
-                //Revisar display & alignItems
-                display: "flex",
-                alignItems: "center",
-                position: "relative",
-              }}
-            >
-              <IconChartHistogram stroke={2} size="1.3rem" />
-              {!collapsed && (
-                <>
-                  <span style={{ marginLeft: "10px", fontWeight: 500 }}>Estadísticas</span>
-                  <IconChevronRight
-                    size="1.1rem"
-                    stroke={2}
-                    style={{
-                      //marginLeft: "auto",
-                      position: "absolute",
-                      
-                      right: "0.8rem",
-                      
-                      //marginRight: "0.4rem", //Borrar ?
-                      transition: "transform 0.2s ease",
-                      transform: showStats ? "rotate(90deg)" : "rotate(0deg)",
-                    }}
-                  />
-                </>
-              )}
-            </ActionIcon>
-            {!collapsed && showStats && (
-              <div
-                style={{
-                  //marginLeft: "2.3rem", marginTop: "0.3rem"
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center", //Centrando subopciones
-                  marginTop: "0.4rem",
-                  gap: "0.25rem",
-                }}
-              >
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  size="lg"
-                  radius="sm"
-                  onClick={() => console.log("Gráficas")}
-                  style={{
-                    //width: "100%",
-                    width: "85%",
-                    justifyContent: "flex-start",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <IconChartPie stroke={2} size="1.1rem"/>
-                  <span style={{ marginLeft: "10px", fontWeight: 400 }}>Gráficas</span>
-                </ActionIcon>
-                
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  size="lg"
-                  radius="sm"
-                  onClick={() => console.log("Reportes")}
-                  style={{
-                    //width: "100%",
-                    width: "85%",
-                    justifyContent: "flex-start",
-                    marginTop: "0.25rem",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <IconFiles stroke={2} size="1.1rem"/>
-                  <span style={{ marginLeft: "10px", fontWeight: 400 }}>Reportes</span>
-                </ActionIcon>
-              </div>
-            )}
-          </div>
-          
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="xl"
-            radius="md"
-            onClick={() => console.log("Sección del historial")}
-            style={{
-              width: collapsed ? 48 : "100%",
-              justifyContent: collapsed ? "center" : "flex-start",
-              transition: "all 0.2ease",
-            }}
-          >
-            <IconReport stroke={2} size="1.3rem" />
-            {!collapsed && (
-              <span style={{ marginLeft: "10px", fontWeight: 500 }}>Historial</span>
-            )}
-          </ActionIcon>
-        </Group>
-      </AppShell.Navbar>
-    </AppShell>
+    </AppShell>    
   );
 }
-*/
+

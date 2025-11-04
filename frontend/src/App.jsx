@@ -9,6 +9,7 @@ import Login from "./pages/login";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
 //rutas por testear
 import ProfileView from "./pages/profile/ProfileView.jsx";
+import ProfileEdit from "./pages/profile/ProfileEdit";
 
 const PrivateRoute = ({ children }) => {
     const { token } = useContext(AuthContext);
@@ -17,7 +18,7 @@ const PrivateRoute = ({ children }) => {
 
 export default function App() {
     return (
-        <MantineProvider defaultColorScheme="light">
+        <MantineProvider defaultColorScheme="dark">
             <AuthProvider>
                 <Router>
                     <Routes>
@@ -28,6 +29,7 @@ export default function App() {
                         <Route path="/dashboard/*" element={ <Dashboard />}>
                             {/* Rutas hija */}
                             <Route path="profile" element={<ProfileView />} />
+                            <Route path="profileEdit" element={<ProfileEdit />} />
                         </Route>
                     </Routes>
                 </Router>

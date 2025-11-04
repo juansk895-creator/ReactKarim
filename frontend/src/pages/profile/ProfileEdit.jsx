@@ -1,14 +1,6 @@
 import React from "react";
 import { Card, Title, Text } from "@mantine/core";
 
-/*
-nombre, apellido_pat, apellido_mat,
-email, num_tel, password (por separado ?)
-fecha_nac, rol_id (#), status_id (#),
-created_id (date), updated_id (date)
-*/
-
-
 export default function ProfileView() {
     return (
         <Card
@@ -24,11 +16,11 @@ export default function ProfileView() {
             }}
         >
             <Title order={3} mb="md" c="darkblue">
-                Perfil de usuario (Solo visualización)
+                Perfil de usuario (Solo edición)
             </Title>
 
             <Title c="dimmed" fz="lg">
-                Sección reservada para mostrar los datos del usuario.
+                Sección reservada para ?.
             </Title>
         </Card>
     );
