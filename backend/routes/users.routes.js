@@ -4,19 +4,23 @@
 //const auth = require('../utils/auth.middleware');
 
 import express from 'express';
+//import { Router } from 'express';
 import * as usersCtrl from '../controllers/users.controller.js';
 import * as auth from '../utils/auth.middleware.js';
 
 const router = express.Router();
+//const router = Router(); ? 
 
 //Público
 router.post('/login', usersCtrl.login);
 
 //Protegido (tokens)
-router.use(auth.verifyToken);
+//router.use(auth.verifyToken); //descomentar al confirmar el funcionamiento del fetch
 
 //CRUD - Usuarios
-router.get('/users', usersCtrl.listUsers);
+//router.get('/users', usersCtrl.listUsers);
+//router.get('/', listUsers);
+router.get('/', usersCtrl.listUsers);
 //GET - id
 router.get('/users/:id', usersCtrl.getUser);
 //POST - Solo administradores
@@ -27,17 +31,3 @@ router.put('/users/:id', auth.requireAdminOrOwner, usersCtrl.updateUserC);
 router.delete('/users/:id', auth.requireAdmin, usersCtrl.deleteUserC);
 
 export default router;
-
-
-
-
-
-
-
-
-
-
-
-
-
-

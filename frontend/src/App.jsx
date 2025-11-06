@@ -9,7 +9,9 @@ import Login from "./pages/login";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
 //rutas por testear
 import ProfileView from "./pages/profile/ProfileView.jsx";
-import ProfileEdit from "./pages/profile/ProfileEdit";
+import ProfileEdit from "./pages/profile/ProfileEdit.jsx";
+import UsersTable from "./pages/users/UsersTable.jsx";
+import UsersRegister from "./pages/users/UsersRegister.jsx";
 
 const PrivateRoute = ({ children }) => {
     const { token } = useContext(AuthContext);
@@ -30,6 +32,8 @@ export default function App() {
                             {/* Rutas hija */}
                             <Route path="profile" element={<ProfileView />} />
                             <Route path="profileEdit" element={<ProfileEdit />} />
+                            <Route path="usersTable" element={<UsersTable />} />
+                            <Route path="usersRegister" element={<UsersRegister />} />
                         </Route>
                     </Routes>
                 </Router>

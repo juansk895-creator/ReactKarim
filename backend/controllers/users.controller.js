@@ -5,8 +5,23 @@ import { hashPassword, comparePassword } from '../utils/encrypt.js';
 //createUser,getUserByEmail,getUserById,updateUser,deleteUser,getUsers
 import { createUser,getUserByEmail,getUserById,updateUser,deleteUser,getUsers } from '../models/users.model.js';
 
+import { pool } from "../db.js";
+
+
 const JWT_SECRET = process.env.JWT_SECRET || 'pa55w0rdJWT';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '60';
+
+// Ordenamiento
+const ALLOWED_SORT = {
+    nombre: 'u.nombre',
+    email: 'u.email',
+    num_tel: 'u.num_tel',
+    rol_id: 'u.rol_id',
+    status_id: 'u.status_id',
+    created_at: 'u.created_at',
+};
+
+
 
 export function generateToken(user) {
     const payload = {
@@ -71,14 +86,70 @@ async function saveUser(req, res) {
 
 // Paginación y filtros
 async function listUsers(req, res) {
+
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const perPage = Math.min(Math.max(parseInt(req.query.perPage) || 10, 1), 100);
+    const sortBy = ALLOWED_SORT[req.query.sortBy] || 'u.created_at';
+    const sortDir = (req.query.sortDir || '').toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    const offset = (page - 1) * perPage;
+
+    const params = [];
+    let where = 'WHERE 1=1';
+
+    if (req.query.role) {
+        params.push(req.query.role);
+        where += `AND u.rol_id = $${params.length}`;
+    }
+    if (req.query.status) {
+        params.push(req.query.status);
+        where += `AND u.status_id = $${params.length}`;
+    }
+    if (req.query.q) {
+        params.push(`%${req.query.q}%`);
+        where += `AND (u.nombre ILIKE $${params.length} OR u.email ILIKE $${params.length} OR u.num_tel ILIKE $${params.length})`;
+    }
+
+    const countSql = `SELECT COUNT(*)::int AS count FROM users u ${where}`;
+    const dataSql = `
+        SELECT u.id, u.nombre, u.email, u.num_tel, u.rol_id, u.status_id
+        FROM users u
+        ${where}
+        ORDER BY ${sortBy} ${sortDir}
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `;
+
+    const client = await pool.connect();
     try {
+        const countRes = await client.query(countSql, params);
+        const total = countRes.rows[0].count;
+        const dataParams = params.concat([perPage, offset]);
+        const dataRes = await client.query(dataSql, dataParams);
+
+        res.json({
+            data: dataRes.rows,
+            page,
+            perPage,
+            total,
+            totalPages: Math.max(1, Math.ceil(total / perPage)),
+            sortBy: Object.keys(ALLOWED_SORT).find(k => ALLOWED_SORT[k] === sortBy) || 'created_at',
+            sortDir: sortDir.toLowerCase(),
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error interno del servidor'});
+    } finally {
+        client.release();
+    }
+
+
+    /*try {
         const { page = 1, pageSize = 10, rol, q } = req.query;
         const result = await getUsers({ page: Number(page), pageSize: Number(pageSize, rol, q )});
         res.json(result);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error interno'});
-    }
+    }*/
 }
 
 async function getUser(req, res) {
@@ -137,19 +208,4 @@ export {
     updateUserC,
     deleteUserC
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

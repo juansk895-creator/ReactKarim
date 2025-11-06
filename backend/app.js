@@ -6,6 +6,7 @@ import { pool } from './db.js'; //"./src/db.js";
 //rutas
 //import authRoutes from './src/routes/auth.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import usersRouter from './routes/users.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,8 +23,9 @@ app.use(express.json());
 //Rutas de API
 //app.use('/api', authRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRouter);
 
-//Rutas
+//Ruta de prueba
 app.get("/api/test", async (req, res) => {
     try {
         const result = await pool.query("SELECT NOW() AS fecha_servidor");

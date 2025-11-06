@@ -12,6 +12,8 @@ import { IconLayoutSidebarRightCollapse, IconLayoutSidebarLeftCollapse,
 import ProfileView from "../profile/ProfileView";
 import { AuthContext } from "../../AuthContext";
 import ModalLogoutConfirm from "../../components/ModalLogoutConfirm";
+import UsersTable from "../users/UsersTable";
+import UsersRegister from "../users/UsersRegister";
 
 // Componente reutilizable para las opciones de la barra lateral
 export function SidebarItem({
@@ -305,7 +307,8 @@ export default function Dashboard() {
             onClose={() => setLogoutOpen(false)}
             onConfirm={handleConfirmLogout}
           />
-          <Outlet />          
+          <Outlet />
+          
           
         </AppShell.Section>
       </Box>

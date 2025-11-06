@@ -11,4 +11,13 @@ export default defineConfig({
       'react-dom': path.resolve('./node_modules/react-dom'),
     },
   },
+  //
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000', // Puerto de backend
+        changeOrigin: true,
+      },
+    },
+  },
 });
