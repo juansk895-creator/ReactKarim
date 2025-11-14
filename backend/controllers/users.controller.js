@@ -6,10 +6,10 @@ import { hashPassword, comparePassword } from '../utils/encrypt.js';
 import { createUser,getUserByEmail,getUserById,updateUser,deleteUser,getUsers } from '../models/users.model.js';
 
 import { pool } from "../db.js";
-
+import { generateToken } from "../utils/jwt.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'pa55w0rdJWT';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '60';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 // Ordenamiento
 const ALLOWED_SORT = {
@@ -21,16 +21,6 @@ const ALLOWED_SORT = {
     created_at: 'u.created_at',
 };
 
-
-
-export function generateToken(user) {
-    const payload = {
-        id: user.id,
-        email: user.email,
-        rol: user.rol
-    };
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-}
 
 //Login, agregar protección
 async function login(req, res) {
@@ -63,10 +53,20 @@ async function login(req, res) {
 //Registrar usuario (revisar permisos/rutas solo para administradores)
 async function saveUser(req, res) {
     try {
-        const { nombre, email, password, rol } = req.body;
-        if (!nombre || !email || !password) {
-            return res.status(400).json({ message: 'Campos obligatorios'});
-        }
+        //Prueba con datos fijos
+        const nombre = "Julio César";
+        const apellido_pat= "Gabriel";
+        const apellido_mat= "Bolaños";
+        const email = "avecesar@gmail.com";
+        const num_tel = "9512566890";
+        const password = "password1";
+        const fecha_nac = "1990-01-01";
+        const rol_id = 2; //Titular
+        //
+        ////const { nombre, email, password, rol } = req.body;
+        ////if (!nombre || !email || !password) {
+            ////return res.status(400).json({ message: 'Campos obligatorios'});
+        ////}
 
         //Verificar existencia previa del correo
         const existing = await getUserByEmail(email);
@@ -74,13 +74,29 @@ async function saveUser(req, res) {
             return res.status(409).json({ message: 'El correo ya existe'});
         }
 
+        //Encriptación
         const hashed = await hashPassword(password);
-        const user = await createUser({ nombre, email, password: hashed, rol });
 
-        res.status(201).json({ user });
+        //
+        const user = await createUser(
+            nombre,
+            apellido_pat,
+            apellido_mat,
+            email,
+            num_tel,
+            hashed,
+            fecha_nac,
+            rol_id,
+            1,
+        );
+
+        res.status(201).json({
+            message: "Usuario registrado con éxito",
+            user
+        });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: 'Error interno'});
+        res.status(500).json({ message: 'Error interno durante el registro de usuario'});
     }
 }
 

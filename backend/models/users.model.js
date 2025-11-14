@@ -5,13 +5,13 @@ const DEFAULT_PAGE_SIZE = 10;
 
 //User - nombre, apellido paterno, apellido materno, email, teléfono, password, 
 //fecha de nacimiento, rol, status, created_at, updated_at
-async function createUser(nombre, apellido_paterno, apellido_materno, email, telefono, password, fecha_nacimiento, rol_id = 'user', status_id = 'activo') {
+async function createUser(nombre, apellido_pat, apellido_mat, email, num_tel, password, fecha_nac, rol_id, status_id = 1) {
     const sql = `
-        INSERT INTO users (nombre, apellido_paterno, apellido_materno, email, telefono, password, fecha_nacimiento, rol_id, status_id, created_at, updated_at)
+        INSERT INTO users (nombre, apellido_pat, apellido_mat, email, num_tel, password, fecha_nac, rol_id, status_id, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
-        RETURNING id, nombre, apellido_paterno, apellido_materno, email, telefono, rol_id, status_id, created_at, updated_at;
+        RETURNING id, nombre, apellido_pat, apellido_mat, email, num_tel, password, fecha_nac, rol_id, status_id, created_at, updated_at;
     `;
-    const values = [nombre, apellido_paterno, apellido_materno, email, telefono, password, fecha_nacimiento, rol_id, status_id];
+    const values = [nombre, apellido_pat, apellido_mat, email, num_tel, password, fecha_nac, rol_id, status_id];
     const { rows } = await pool.query(sql, values);
     return rows[0];
 }
@@ -52,7 +52,7 @@ name, email, role, status, created_at;`;
 */
     if (nombre !== undefined) { parts.push(`nombre = $${idx++}`); values.push(nombre); }
     if (email !== undefined) { parts.push(`email = $${idx++}`); values.push(email) }
-    if (rol !== undefined) { parts.push(`rol_id = $${idx++}`); values.push(rol_id) }
+    if (rol_id !== undefined) { parts.push(`rol_id = $${idx++}`); values.push(rol_id) }
     if (status_id !== undefined) { parts.push(`status_id = $${idx++}`); values.push(status_id) }
     if (password !== undefined) { parts.push(`password = $${idx++}`); values.push(password) }
 
@@ -128,7 +128,6 @@ async function getUsers({ page = 1, pageSize = DEFAULT_PAGE_SIZE, rol_id, q }) {
     };
 }
 
-
 export {
     createUser,
     getUserByEmail,
@@ -137,6 +136,4 @@ export {
     deleteUser,
     getUsers
 };
-
-
 

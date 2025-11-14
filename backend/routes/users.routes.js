@@ -24,7 +24,8 @@ router.get('/', usersCtrl.listUsers);
 //GET - id
 router.get('/users/:id', usersCtrl.getUser);
 //POST - Solo administradores
-router.post('/users', auth.requireAdmin, usersCtrl.saveUser);
+//router.post('/users', auth.requireAdmin, usersCtrl.saveUser);
+router.post('/', auth.verifyToken, auth.requireAdmin, usersCtrl.saveUser);
 //PUT - id, administradores y el propio usuario de la cuenta
 router.put('/users/:id', auth.requireAdminOrOwner, usersCtrl.updateUserC);
 //DELETE - id, solo administradores

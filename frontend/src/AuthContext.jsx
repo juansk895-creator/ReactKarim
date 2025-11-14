@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
 
     //Se devuelve el token actual (para fetch/axios)
     const getToken = useCallback(() => token, [token]);
-    //el backend debe responder con: { token, user: { id, nombre, email, rol } }
+    //el backend debe responder con: { token, user: { id, nombre, email, rol_id } }
     const value = {
         user,
         token,

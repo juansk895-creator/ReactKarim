@@ -6,29 +6,25 @@ import { createUser, getUserByEmail } from '../models/users.model.js';
 //hashPassword = encryptPassword ?
 import { hashPassword, comparePassword } from '../utils/encrypt.js';
 
-//import { generateToken } from './users.controller.js'; // Se usa ?
+import { generateToken } from '../utils/jwt.js';
 import { pool } from '../db.js';
 
 //Variables de entorno
 const { JWT_SECRET, JWT_EXPIRES_IN } = process.env;
 
-// Función auxiliar
-function generateToken(payload) {
-    return jwt.sign(payload, JWT_SECRET || "fallback_secret",{
-        expiresIn: JWT_EXPIRES_IN || "1h",
-    });
-}
-
 export async function registerUser(req, res) {
+
+
+
     try {
         const {
             nombre,
-            apellido_paterno,
-            apellido_materno,
+            apellido_pat,
+            apellido_mat,
             email,
-            telefono,
+            num_tel,
             password,
-            fecha_nacimiento,
+            fecha_nac,
             rol_id,
             status_id
         } = req.body;
@@ -48,19 +44,19 @@ export async function registerUser(req, res) {
         //Usuario
         const newUser = await createUser(
             nombre,
-            apellido_paterno,
-            apellido_materno,
+            apellido_pat,
+            apellido_mat,
             email,
-            telefono,
+            num_tel,
             hashedPassword,
-            fecha_nacimiento,
+            fecha_nac,
             rol_id || 'user', // Comprobar
             status_id || 'activo' // Comprobar
         );
 
         // token JWT
         //const token = generateToken(newUser);
-        const token = generateToken({ id: newUser.id, rol: newUser.rol_id });
+        const token = generateToken(user);
 
         return res.status(201).json({
             message: 'Usuario registrado con éxito',
@@ -91,7 +87,10 @@ export async function loginUser(req, res) {
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Contraseña incorrecta'});
         }
-        const token = generateToken({ id: user.id, rol: user.rol_id });
+        const token = generateToken(user);
+
+        console.log("TOKEN GENERADO EN LOGIN: ", token);
+
         const { password: _, ...userData } = user;
 
         //res.json({ ok: true, token });

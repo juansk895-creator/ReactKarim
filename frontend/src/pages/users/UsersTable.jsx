@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Center, Group, Loader, Table, Text, Pagination } from "@mantine/core";
-import { IconPlus, IconSortAscending, IconSortDescending } from "@tabler/icons-react";
+import { IconPlus, IconSortAscending, IconSortDescending, IconEdit } from "@tabler/icons-react";
 import { useNavigate } from 'react-router-dom';
 
 const COLUMNS = [
@@ -9,6 +9,7 @@ const COLUMNS = [
     { key: 'num_tel', label: 'Teléfono' },
     { key: 'rol_id', label: 'Rol' },
     { key: 'status_id', label: 'Estatus' },
+    { key: '', label: 'Edición' },
 ];
 
 export default function UsersTable() {
@@ -95,6 +96,7 @@ export default function UsersTable() {
                                 <Table.Td>{u.num_tel}</Table.Td>
                                 <Table.Td>{u.rol_id}</Table.Td>
                                 <Table.Td>{u.status_id}</Table.Td>
+                                <Table.Td>{<IconEdit stroke={2} />}</Table.Td>
                             </Table.Tr>
                         ))}
                     </Table.Tbody>

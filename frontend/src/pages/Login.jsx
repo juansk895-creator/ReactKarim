@@ -30,8 +30,11 @@ export default function Login() {
 
             const data = await response.json();
 
-            //el backend debe responder con: { token, user: { id, nombre, email, rol } }
+            //el backend debe responder con: { token, user: { id, nombre, email, rol_id } }
             login({ token: data.token, user: data.user });
+            //token
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user)); 
             navigate('/dashboard');
         } catch (err) { //err ó error ?
             setError(err.message || 'Error al iniciar sesión');

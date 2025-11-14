@@ -300,6 +300,11 @@ export default function Dashboard() {
             alignItems: "center",
             justifyContent: "center",
             flexDirection: "column", //cambiar ubicación dentro del main
+
+            height: "100vh",
+            padding: 0,
+            position: "relative",
+            overflow: "visible",
           }}
         >
           <ModalLogoutConfirm
