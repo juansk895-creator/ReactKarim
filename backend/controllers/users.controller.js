@@ -53,22 +53,23 @@ async function login(req, res) {
 //Registrar usuario (revisar permisos/rutas solo para administradores)
 async function saveUser(req, res) {
     try {
-        //Prueba con datos fijos
-        const nombre = "Julio César";
-        const apellido_pat= "Gabriel";
-        const apellido_mat= "Bolaños";
-        const email = "avecesar@gmail.com";
-        const num_tel = "9512566890";
-        const password = "password1";
-        const fecha_nac = "1990-01-01";
-        const rol_id = 2; //Titular
-        //
-        ////const { nombre, email, password, rol } = req.body;
-        ////if (!nombre || !email || !password) {
-            ////return res.status(400).json({ message: 'Campos obligatorios'});
-        ////}
+        const {
+            nombre,
+            apellido_pat,
+            apellido_mat,
+            email,
+            num_tel,
+            password,
+            fecha_nac,
+            rol_id
+        } = req.body;
+        
+        // Validaciones
+        if (!nombre || !apellido_pat || !email || !num_tel || !password || !fecha_nac || !rol_id) {
+            return res.status(400).json({ message: 'Campos obligatorios faltantes' });
+        }
 
-        //Verificar existencia previa del correo
+        // Correo duplicado
         const existing = await getUserByEmail(email);
         if (existing) {
             return res.status(409).json({ message: 'El correo ya existe'});
@@ -76,6 +77,8 @@ async function saveUser(req, res) {
 
         //Encriptación
         const hashed = await hashPassword(password);
+
+        const status_id = 1;
 
         //
         const user = await createUser(
@@ -87,16 +90,16 @@ async function saveUser(req, res) {
             hashed,
             fecha_nac,
             rol_id,
-            1,
+            status_id,
         );
 
         res.status(201).json({
             message: "Usuario registrado con éxito",
-            user
+            user,
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: 'Error interno durante el registro de usuario'});
+        res.status(500).json({ message: 'Error interno durante el registro de usuario (users.controller.js)'});
     }
 }
 

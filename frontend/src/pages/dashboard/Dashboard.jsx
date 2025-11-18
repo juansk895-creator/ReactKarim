@@ -123,7 +123,7 @@ export default function Dashboard() {
           <ActionIcon
             variant="subtle"
             //size="lg"
-            
+            color="gray"
             onClick={() => setLogoutOpen(true)}
             style={{
               backgroundColor: theme.colors.gray[9],

@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Button, Center, Group, Loader, Table, Text, Pagination } from "@mantine/core";
 import { IconPlus, IconSortAscending, IconSortDescending, IconEdit } from "@tabler/icons-react";
 import { useNavigate } from 'react-router-dom';
+//
+import '@mantine/core/styles.css';
+import '@mantine/core/styles.layer.css';
+//
 
 const COLUMNS = [
     { key: 'nombre', label: 'Nombre' },
