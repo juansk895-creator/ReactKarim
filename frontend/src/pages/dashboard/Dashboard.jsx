@@ -1,9 +1,13 @@
 import React, { useContext, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 //mantine
-import { ActionIcon, AppShell, Box, Button, Collapse, Group, Modal, Portal, Text, Tooltip,
-  Transition, useMantineTheme } from "@mantine/core";
+import { ActionIcon, AppShell, Box, Button, Collapse, Group, Modal, Portal, Text, Tooltip, Transition, useMantineTheme } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';  // Revisar si es necesario al final
+//
+import '@mantine/dates/styles.css';
+import '@mantine/core/styles.css';
+import '@mantine/core/styles.layer.css';
+//
 //Íconos
 import { IconLayoutSidebarRightCollapse, IconLayoutSidebarLeftCollapse,
   IconUserCircle, IconUsers, IconFileText, IconChartBar, IconHistory,

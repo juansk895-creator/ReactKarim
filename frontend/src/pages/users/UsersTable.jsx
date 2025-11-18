@@ -3,6 +3,7 @@ import { Button, Center, Group, Loader, Table, Text, Pagination } from "@mantine
 import { IconPlus, IconSortAscending, IconSortDescending, IconEdit } from "@tabler/icons-react";
 import { useNavigate } from 'react-router-dom';
 //
+import '@mantine/dates/styles.css';
 import '@mantine/core/styles.css';
 import '@mantine/core/styles.layer.css';
 //

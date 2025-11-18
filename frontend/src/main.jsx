@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MantineProvider, ColorSchemeScript } from '@mantine/core';
+import { Notification } from '@mantine/core';
 import './index.css';
 import App from './App.jsx';
 
@@ -12,6 +13,7 @@ createRoot(document.getElementById('root')).render(
         colorScheme: "dark",
       }}
     >
+      <Notification />
       <App />
     </MantineProvider>
   </StrictMode>,

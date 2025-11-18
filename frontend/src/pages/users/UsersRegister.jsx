@@ -58,11 +58,15 @@ function randomPassword() {
     );
 }
 
-function randomEmail(nombre, apellido) {
-    const base = `${nombre}_${apellido}`.toLowerCase();
-    const random = Math.floor(Math.random() * 9999);
+function randomEmail(nombre, apellido_pat) {
+    //const base = `${nombre}_${apellido_pat}`.toLowerCase();
+    //const random = Math.floor(Math.random() * 9999);
     // Distintos dominios ?
-    return `${base}${random}@luck.com`;
+    //return `${base}${random}@luck.com`;
+    const cleanName = normalizeString(nombre.split(" ")[0]);
+    const cleanLast = normalizeString(apellido_pat);
+    const random = Math.floor(Math.random() * 9999);
+    return `${cleanName}_${cleanLast}${random}@luck.com`;
 }
 
 function generateUserTemplate(type = "demo") {
@@ -100,6 +104,15 @@ const normalizeName = (value) => {
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
         .join(" ");
 };
+
+function normalizeString(str) {
+    return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/ñ/gi, "n")
+        .replace(/\s+/g, "_")
+        .toLowerCase();
+}
 
 const normalizeEmail = (value) => value?.trim().toLowerCase() || "";
 
@@ -172,7 +185,7 @@ const validateBirthdate = (value) => {
 
 //
 export default function UsersRegister() {
-    //const { secureFetch } = useContext(AuthContext);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Password
     const [visible, { toggle }] = useDisclosure(false);
@@ -224,8 +237,11 @@ export default function UsersRegister() {
         setPasswordVisible(false);
     }
 
+    // Registro de usuario por formulario
     const handleSubmit = async (values) => {
         try {
+
+            setIsSubmitting(true);
 
             const formattedDate = values.fecha_nac.toISOString().split("T")[0];
             const response = await secureFetch(
@@ -242,15 +258,32 @@ export default function UsersRegister() {
 
             const data = await response.json();
             if (!response.ok) {
-                console.warn(data.message);
+                //console.warn(data.message);
+                notifications.show({
+                    title: "Error",
+                    message: data.message || "No se pudo completar el registro",
+                    color: "red",
+                });
                 return;
             }
 
             //alert("Usuario registrado con éxito (UsersRegister.jsx)");
+            notifications.show({
+                title: "Registro exitoso",
+                message: "El usuario ha sido registrado correctamente",
+                color: "green",
+            });
             form.reset();
             navigate("/dashboard/usersTable");
         } catch (error) {
-            console.error("Error al registrar usuario:", error);
+            //console.error("Error al registrar usuario:", error);
+            notifications.show({
+                title: "Error inesperado",
+                message: "Ocurrió un problema durante el registro",
+                color: "red",
+            });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -377,13 +410,15 @@ export default function UsersRegister() {
                                 label="Teléfono"
                                 placeholder="10 dígitos"
                                 radius="md"
+                                maxLength={10}
                                 {...form.getInputProps("num_tel")}
-                                onBlur={(e) =>
-                                    form.setFieldValue(
-                                        "num_tel",
-                                        normalizePhone(e.target.value)
-                                    )
-                                }
+
+                                onKeyDown={(e) => {
+                                    const allowed = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
+                                    if (!/^\d$/.test(e.key) && !allowed.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
+                                }}
                             />
                         </Grid.Col>
 
@@ -447,6 +482,7 @@ export default function UsersRegister() {
                             color="green"
                             variant="transparent"
                             leftSection={<IconDeviceFloppy />}
+                            loading={isSubmitting}
                         >
                             Registrar
                         </Button>
