@@ -20,7 +20,7 @@ router.post('/login', usersCtrl.login);
 //CRUD - Usuarios
 //router.get('/users', usersCtrl.listUsers);
 //router.get('/', listUsers);
-router.get('/', usersCtrl.listUsers);
+router.get('/', auth.verifyToken, auth.requireAdmin, usersCtrl.listUsers);
 //GET - id
 router.get('/users/:id', usersCtrl.getUser);
 //POST - Solo administradores

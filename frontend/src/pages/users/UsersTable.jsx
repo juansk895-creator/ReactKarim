@@ -1,118 +1,186 @@
-import React, { useEffect, useState } from "react";
-import { Button, Center, Group, Loader, Table, Text, Pagination } from "@mantine/core";
-import { IconPlus, IconSortAscending, IconSortDescending, IconEdit } from "@tabler/icons-react";
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ActionIcon, Badge, Box, Button, Card, Center, Flex, Group, Loader, Pagination, Select, Table, Text, TextInput, Title } from "@mantine/core";
+import { IconArrowsSort, IconEdit, IconPlus, IconSearch, IconTrash } from "@tabler/icons-react";
 //
 import '@mantine/dates/styles.css';
 import '@mantine/core/styles.css';
 import '@mantine/core/styles.layer.css';
 //
+import { AuthContext } from "../../AuthContext";
 
-const COLUMNS = [
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'email', label: 'Email' },
-    { key: 'num_tel', label: 'Teléfono' },
-    { key: 'rol_id', label: 'Rol' },
-    { key: 'status_id', label: 'Estatus' },
-    { key: '', label: 'Edición' },
-];
+//
+const rolLabel = {
+    1: "Administrador",
+    2: "Titular",
+    3: "Analista",
+};
 
 export default function UsersTable() {
 
+    // Valores temporalmente estáticos
+    const pageSize = "10";
+    const currentPage = 1;
+
+    const { secureFetch } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const [rows, setRows] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [sortBy, setSortBy] = useState("nombre");
+    const [sortDirection, setSortDirection] = useState("asc");
 
-    const [page, setPage] = useState();
-    const [perPage] = useState(18);
-    const [totalPages, setTotalPages] = useState(1);
 
-    const [sortBy, setSortBy] = useState('created_at');
-    const [sortDir, setSortDir] = useState('desc');
-
-    async function fetchData() {
-        setLoading(true);
-        setError(null);
+    const fetchUsers = async () => {
         try {
-            const params = new URLSearchParams({ page, perPage, sortBy, sortDir });
-            const res = await fetch(`/api/users?${params.toString()}`, { credentials: 'include' });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const json = await res.json();
-            setRows(json.data || []);
-            setTotalPages(json.totalPages || 1);
-        } catch (e) {
-            setError(e.message);
-        } finally {
-            setLoading(false);
-        }
-    }
+            console.log("Llamando secureFetch a /api/users ... ");
+            const response = await secureFetch("http://localhost:4000/api/users");
+            
+            if (!response) {
+                return;
+            }
 
-    // 
-    useEffect(() => {
-        fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, sortBy, sortDir]);
+            if (!response.ok) {
+                console.error("Error HTTP:", response.status);
+                return;
+            }
 
-    const handleSort = (key) => {
-        if (sortBy === key) {
-            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortBy(key);
-            setSortDir('asc');
+            const data = await response.json();
+
+            console.log("Data recibido desde el backend:", data);
+            console.log("Array.isArray(data):", Array.isArray(data));
+
+            setUsers(data.users || []);
+        } catch (error) {
+            console.error("Error al cargar usuarios:", error);
         }
     };
 
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const handleSort = (field) => {
+        if (field === sortBy) {
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+        } else {
+            setSortBy(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const safeUsers = Array.isArray(users) ? users : [];
+    const sortedUsers = [...safeUsers].sort((a, b) => {
+        const v1 = a[sortBy]?.toString().toLowerCase() ?? "";
+        const v2 = b[sortBy]?.toString().toLowerCase() ?? "";
+        return sortDirection === "asc" ? v1.localeCompare(v2) : v2.localeCompare(v1);
+        /*if (!v1 || !v2) {
+            return 0;
+        }*/
+
+        /*if (sortDirection === "asc") {
+            return v1.localeCompare(v2);
+        }
+        return v2.localeCompare(v1);*/
+    });
+
     return (
-        <div>
-            <Group justify="space-between" mb="md">
-                <Text size="xl" fw={700} >Usuarios</Text>
-                <Button leftSection={<IconPlus size={16} />} onClick={() => navigate('/dashboard/usersRegister')}>
+        <>
+            <Group
+                justify="space-between"
+                mb="md"
+            >
+                <Title order={3}>Usuarios</Title>
+                <Button
+                    variant="outline"
+                    leftSection={<IconPlus size={18} />}
+                >
                     Nuevo usuario
                 </Button>
             </Group>
+            
+            <Table
+                striped
+                highlightOnHover
+                withColumnBorders
+                verticalSpacing="md"
+                horizontalSpacing="md"
+            >
+                <Table.Thead>
+                    <Table.Tr>
+                        <Table.Th
+                            onClick={() => handleSort("nombre")}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        >
+                            Nombre
+                        </Table.Th>
+                        <Table.Th
+                            onClick={() => handleSort("email")}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        >
+                            Email
+                        </Table.Th>
+                        <Table.Th
+                            onClick={() => handleSort("num_tel")}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        >
+                            Teléfono
+                        </Table.Th>
+                        <Table.Th>Rol</Table.Th>
+                        <Table.Th>Estado</Table.Th>
+                        <Table.Th>Editar</Table.Th>
+                        <Table.Th>Eliminar</Table.Th>
+                    </Table.Tr>
+                </Table.Thead>
 
-            {loading ? (
-                <Center py="xl"><Loader /></Center>
-            ) : error ? (
-                <Text c="red">Error: {error}</Text>
-            ) : (
-                <Table striped highlightOnHover withTableBorder withColumnBorders>
-                    <Table.Thead>
-                        <Table.Tr>
-                            {COLUMNS.map((col) => (
-                                <Table.Th key={col.key} onClick={() => handleSort(col.key)} style={{ cursor: 'pointer' }}>
-                                    <Group gap="xs">
-                                        <span>{col.label}</span>
-                                        {sortBy === col.key ? (
-                                            sortDir === 'asc' ? <IconSortAscending size={14} /> : <IconSortDescending size={14} />
-                                        ) : null}
-                                    </Group>
-                                </Table.Th>
-                            ))}
+                <Table.Tbody>
+                    {Array.isArray(sortedUsers) && sortedUsers.map((u) => (
+                        <Table.Tr key={u.id}>
+                            <Table.Td>{u.nombre} {u.apellido_pat} {u.apellido_mat}</Table.Td>
+                            <Table.Td>{u.email}</Table.Td>
+                            <Table.Td>{u.num_tel}</Table.Td>
+                            <Table.Td> {
+                                u.rol_id === 1
+                                ? "Administrador"
+                                : u.rol_id === 2
+                                ? "Titular"
+                                : "Analista"
+                            }
+                            </Table.Td>
+                            <Table.Td> {
+                                u.status_id === 1
+                                ? "Activo"
+                                : "Inactivo"
+                            }
+                            </Table.Td>
+                            <Table.Td>
+                                <ActionIcon
+                                    variant="subtle"
+                                    color="blue"
+                                >
+                                    <IconEdit size={18} stroke={2} />
+                                </ActionIcon>
+                            </Table.Td>
+
+                            <Table.Td>
+                                <ActionIcon
+                                    variant="subtle"
+                                    color="red"
+                                >
+                                    <IconTrash size={18} stroke={2}/>
+                                </ActionIcon>
+                            </Table.Td>
                         </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                        {rows.map((u) => (
-                            <Table.Tr key={u.id}>
-                                <Table.Td>{u.nombre}</Table.Td>
-                                <Table.Td>{u.email}</Table.Td>
-                                <Table.Td>{u.num_tel}</Table.Td>
-                                <Table.Td>{u.rol_id}</Table.Td>
-                                <Table.Td>{u.status_id}</Table.Td>
-                                <Table.Td>{<IconEdit stroke={2} />}</Table.Td>
-                            </Table.Tr>
-                        ))}
-                    </Table.Tbody>
-                </Table>
-            )}
-
-            <Group justify="center" mt="md">
-                <Pagination total={totalPages} value={page} onChange={setPage} />
-            </Group>
-
-        </div>
+                    ))}
+                </Table.Tbody>
+            </Table>
+        </>
     );
 }
 

@@ -145,7 +145,7 @@ async function listUsers(req, res) {
         const dataRes = await client.query(dataSql, dataParams);
 
         res.json({
-            data: dataRes.rows,
+            users: dataRes.rows,
             page,
             perPage,
             total,
