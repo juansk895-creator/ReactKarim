@@ -204,6 +204,31 @@ async function updateUserC(req, res) {
     }
 }
 
+async function updateStatusC(req, res) {
+    try {
+        const id = req.params.id;
+        const { status_id } = req.body;
+
+        if (![1, 2].includes(status_id)) {
+            return res.status(400).json({  message: "Estado inválido" });
+        }
+
+        const updated = await updateUser(id, { status_id });
+
+        if (!updated) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        res.json({
+            message: "Estado actualizado con éxito",
+            user: updated
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error interno" });
+    }
+}
+
 async function deleteUserC(req, res) {
     try {
         const id = req.params.id;
@@ -222,6 +247,7 @@ async function deleteUserC(req, res) {
 export {
     login,
     saveUser,
+    updateStatusC,
     listUsers,
     getUser,
     updateUserC,

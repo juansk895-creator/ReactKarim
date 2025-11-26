@@ -27,7 +27,9 @@ async function createUser(nombre, apellido_pat, apellido_mat, email, num_tel, pa
 
 async function getUserByEmail(email) {
     const { rows } = await pool.query(
-        `SELECT id, nombre, email, password, rol_id, status_id FROM users WHERE email = $1 LIMIT 1`,
+        `SELECT
+            id, nombre, email, password, rol_id, status_id
+        FROM users WHERE email = $1 LIMIT 1`,
         [email]
     );
     return rows[0];
@@ -35,8 +37,10 @@ async function getUserByEmail(email) {
 
 async function getUserById(id) {
     const { rows } = await pool.query(
-        `SELECT id, nombre, email, rol_id, status_id, created_at FROM users WHERE id = $1`,
-        [id]
+        `SELECT
+            id, nombre, apellido_pat, apellido_mat, email,
+            num_tel, fecha_nac, rol_id, status_id, created_at
+        FROM users WHERE id = $1`, [id]
     );
     return rows[0];
 }

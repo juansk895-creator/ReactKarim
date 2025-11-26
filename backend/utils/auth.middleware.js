@@ -10,11 +10,11 @@ const SECRET_KEY = process.env.JWT_SECRET;
 export function verifyToken(req, res, next) {
     const authHeader = req.headers.authorization || '';
 
-    console.log("AUTH HEADER RECIBIDO: ", authHeader);
+    //console.log("AUTH HEADER RECIBIDO: ", authHeader);
 
     const token = authHeader.startsWith('Bearer') ? authHeader.slice(6) : null;
 
-    console.log("TOKEN EXTRAÍDO (BACKEND): ", token);
+    //console.log("TOKEN EXTRAÍDO (BACKEND): ", token);
     
     if (!token) {
         console.log("TOKEN VACÍO O NULO");
@@ -24,7 +24,7 @@ export function verifyToken(req, res, next) {
     try {
         const payload = jwt.verify(token, SECRET_KEY);
         
-        console.log("TOKEN DECODIFICADO (PAYLOAD): ", payload);
+        //console.log("TOKEN DECODIFICADO (PAYLOAD): ", payload);
 
         req.user = payload; //{id, email, role, iat, exp...}
         next();

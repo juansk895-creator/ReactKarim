@@ -3,6 +3,12 @@
 import { Modal, Button, Group, Text } from "@mantine/core";
 import { FocusTrap } from "focus-trap-react";
 import { IconXboxX } from "@tabler/icons-react";
+//
+import '@mantine/dates/styles.css';
+import '@mantine/core/styles.css';
+import '@mantine/core/styles.layer.css';
+//
+
 //Revisar focus trap para mantener funcionalidad solo en el modal
 export default function ModalLogoutConfirm({ opened, onClose, onConfirm }) {
   return (
@@ -24,7 +30,7 @@ export default function ModalLogoutConfirm({ opened, onClose, onConfirm }) {
       overlayProps={{
         backgroundOpacity: 0.75,
         blur: 4,
-        color: "#000",
+        //color: "#000",
       }}
       styles={{
         inner: {
@@ -40,7 +46,7 @@ export default function ModalLogoutConfirm({ opened, onClose, onConfirm }) {
           backdropFilter: "blur(3px)", // Desenfoque
         },
         content: {
-          backgroundColor: "#1A1B1E",
+          //backgroundColor: "#1A1B1E",
           color: "white",
           borderRadius: "12px",
           padding: "1.5rem",
@@ -58,7 +64,7 @@ export default function ModalLogoutConfirm({ opened, onClose, onConfirm }) {
           position: "absolute",
           top: "15px",
           right: "12px",
-          background: "transparent",
+          //background: "transparent",
           border: "none",
           
         },
@@ -82,22 +88,19 @@ export default function ModalLogoutConfirm({ opened, onClose, onConfirm }) {
           
         }}
       >
-        <Button onClick={onConfirm}
-          variant="outline"
-          style={{
-            borderColor: "red",
-            marginRight: "1rem",
-          }}
-        >
-          Cerrar sesión
-        </Button>
-        <Button onClick={onClose}
-          variant="outline"
-          style={{
-            borderColor: "yellow",
-          }}
+        <Button
+          onClick={onClose}
+          variant="transparent"
+          color="yellow"
         >
           Cancelar
+        </Button>
+        <Button
+          onClick={onConfirm}
+          variant="transparent"
+          color="red"
+        >
+          Cerrar sesión
         </Button>
       </Group>
     </Modal>

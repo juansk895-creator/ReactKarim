@@ -22,7 +22,10 @@ router.post('/login', usersCtrl.login);
 //router.get('/', listUsers);
 router.get('/', auth.verifyToken, auth.requireAdmin, usersCtrl.listUsers);
 //GET - id
-router.get('/users/:id', usersCtrl.getUser);
+//router.get('/users/:id', usersCtrl.getUser);
+router.get('/:id', usersCtrl.getUser);
+//PATCH - Cambiar estado
+router.patch('/:id/status', auth.verifyToken, auth.requireAdmin, usersCtrl.updateStatusC);
 //POST - Solo administradores
 //router.post('/users', auth.requireAdmin, usersCtrl.saveUser);
 router.post('/', auth.verifyToken, auth.requireAdmin, usersCtrl.saveUser);

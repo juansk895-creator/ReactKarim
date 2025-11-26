@@ -9,7 +9,7 @@ import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { AuthContext } from "../../AuthContext";
-import { IconWand, IconEraser, IconDeviceFloppy, IconArrowBackUp } from "@tabler/icons-react";
+import { IconWand, IconEraser, IconDeviceFloppy, IconArrowBackUp, IconX } from "@tabler/icons-react";
 //Archivos
 import { secureFetch } from "../../utils/secureFetch";
 
@@ -461,6 +461,16 @@ export default function UsersRegister() {
                     <Divider my="md" />
 
                     <Group justify="space-between">
+
+                        <Button
+                            color="orange"
+                            onClick={() => navigate("/dashboard/usersTable")}
+                            variant="transparent"
+                            leftSection={<IconX />}
+                        >
+                            Cancelar
+                        </Button>
+
                         <Button
                             onClick={() => handleRandom("demo")}
                             variant="transparent"
