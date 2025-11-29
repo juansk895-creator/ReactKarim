@@ -66,7 +66,7 @@ export async function requireAdminOrOwner(req, res, next) {
             return res.status(401).json({ message: 'No autorizado en requireAdminOrOwner'});
         }
         const targetId = req.params.id;
-        if (req.user.rol_id === 'admin' || String(req.user.id) === String(req.params.id) ) {
+        if (req.user.rol_id === 1 || String(req.user.id) === String(req.params.id) ) {
             return next();
         }
         return res.status(403).json({ message: 'No se cuentan con los permisos necesarios'});

@@ -10,14 +10,14 @@ import '@mantine/core/styles.layer.css';
 import { AuthContext } from "../../AuthContext";
 //Archivos
 import ModalChangeStatus from "../../components/ModalChangeStatus";
+import ModalConfirmDeleteUser from "../../components/ModalConfirmDeleteUser";
 
-
-//
-const rolLabel = {
+// Revisar uso
+/*const rolLabel = {
     1: "Administrador",
     2: "Titular",
     3: "Analista",
-};
+};*/
 
 export default function UsersTable() {
 
@@ -32,7 +32,8 @@ export default function UsersTable() {
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState("nombre");
     const [sortDirection, setSortDirection] = useState("asc");
-    const [modalOpen, setModalOpen] = useState(false);
+    const [modalStatusOpen, setModalStatusOpen] = useState(false);
+    const [modalDeleteOpen, setModalDeleteOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
 
 
@@ -82,11 +83,31 @@ export default function UsersTable() {
                 console.error("Error al actualizar estado");
             }
 
-            setModalOpen(false);
+            setModalStatusOpen(false);
             fetchUsers();
         } catch (err) {
             console.error("Error:", err);
-            setModalOpen(false);
+            setModalStatusOpen(false);
+        }
+    };
+
+    const handleConfirmDelete = async () => {
+        try {
+            const response = await secureFetch(
+                `http://localhost:4000/api/users/${selectedUser.id}`,
+                { method: "DELETE" }
+            );
+
+            if (!response.ok) {
+                console.error("Error al eliminar usuario");
+                return;
+            }
+
+            setModalDeleteOpen(false);
+            fetchUsers();
+        } catch (err) {
+            console.error("Error:", err);
+            setModalDeleteOpen(false);
         }
     };
 
@@ -241,7 +262,7 @@ export default function UsersTable() {
                                         }}
                                         onClick={() => {
                                             setSelectedUser(u);
-                                            setModalOpen(true);
+                                            setModalStatusOpen(true);
                                         }}
                                     >
                                         {u.status_id === 1 ? "Activo" : "Inactivo"}
@@ -270,6 +291,10 @@ export default function UsersTable() {
                                         variant="subtle"
                                         color="red"
                                         label="Eliminar usuario"
+                                        onClick={() => {
+                                            setSelectedUser(u);
+                                            setModalDeleteOpen(true);
+                                        }}
                                     >
                                         <IconTrash size={18} stroke={2}/>
                                     </ActionIcon>
@@ -282,11 +307,17 @@ export default function UsersTable() {
         </Group>
         
         <ModalChangeStatus
-            opened={modalOpen}
-            onClose={() => setModalOpen(false)}
+            opened={modalStatusOpen}
+            onClose={() => setModalStatusOpen(false)}
             onConfirm={handleConfirmStatusChange}
             userName={selectedUser?.nombre}
             currentStatus={selectedUser?.status_id}
+        />
+        <ModalConfirmDeleteUser
+            opened={modalDeleteOpen}
+            onClose={() => setModalDeleteOpen(false)}
+            onConfirm={handleConfirmDelete}
+            userName={selectedUser?.nombre}
         />
         <Outlet />
 

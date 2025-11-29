@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 //const jwt = require('jsonwebtoken');
 import { hashPassword, comparePassword } from '../utils/encrypt.js';
 //createUser,getUserByEmail,getUserById,updateUser,deleteUser,getUsers
-import { createUser,getUserByEmail,getUserById,updateUser,deleteUser,getUsers } from '../models/users.model.js';
+import { createUser,getUserByEmail,getUserById,updateUser,updatePassword,deleteUser,getUsers } from '../models/users.model.js';
 
 import { pool } from "../db.js";
 import { generateToken } from "../utils/jwt.js";
@@ -160,15 +160,6 @@ async function listUsers(req, res) {
         client.release();
     }
 
-
-    /*try {
-        const { page = 1, pageSize = 10, rol, q } = req.query;
-        const result = await getUsers({ page: Number(page), pageSize: Number(pageSize, rol, q )});
-        res.json(result);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Error interno'});
-    }*/
 }
 
 async function getUser(req, res) {
@@ -229,6 +220,31 @@ async function updateStatusC(req, res) {
     }
 }
 
+async function updatePasswordC(req, res) {
+    try {
+        const { id } = req.params;
+        const { currentPassword, newPassword } = req.body;
+
+        const user = await getUserById(id);
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        const match = await comparePassword(currentPassword, user.password);
+        if (!user) {
+            return res.status(403).json({ message: "Contraseña actual incorrecta" });
+        }
+
+        const newHash = await hashPassword(newPassword);
+        await updatePassword(id, newHash);
+
+        res.json({ message: "Contraseña actualizada" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error interno" });
+    }
+}
+
 async function deleteUserC(req, res) {
     try {
         const id = req.params.id;
@@ -248,6 +264,7 @@ export {
     login,
     saveUser,
     updateStatusC,
+    updatePasswordC,
     listUsers,
     getUser,
     updateUserC,

@@ -1,0 +1,103 @@
+import React from "react";
+import { Button, Group, Modal, Text } from "@mantine/core";
+import { IconXboxX } from "@tabler/icons-react";
+
+
+
+export default function ModalConfirmDeleteUser({
+    opened,
+    onClose,
+    onConfirm,
+    userName,
+}) {
+    return (
+        <Modal
+            opened={opened}
+            onClose={onClose}
+            withinPortal
+            title="Eliminación de usuario"
+            withCloseButton
+            closeButtonProps={{
+                icon: <IconXboxX size={20} stroke={1.5} />,
+            }}
+            centered
+            transitionProps={{
+                transition: "fade",
+                duration: 250,
+                timingFunction: "ease",
+            }}
+            overlayProps={{
+                backgroundOpacity: 0.75,
+                blur: 4,
+                //color: "#000",
+            }}
+            styles={{
+                inner: {
+                position: "fixed",
+                //inset: 0,
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 10000,
+                },
+                overlay: {
+                backgroundColor: "rgba(0, 0, 0, 0.7)", // Sombra
+                backdropFilter: "blur(3px)", // Desenfoque
+                },
+                content: {
+                //backgroundColor: "#1A1B1E",
+                color: "white",
+                borderRadius: "12px",
+                padding: "1.5rem",
+                minWidth: "320px",
+                boxShadow: "0 0 25px rgba(0, 0, 0, 0.6)",
+
+                position: "relative",
+                },
+                title: {
+                textAlign: "left",
+                marginBottom: "0.5rem",
+                marginTop: "0rem",
+                },
+                close: {
+                position: "absolute",
+                top: "15px",
+                right: "12px",
+                //background: "transparent",
+                border: "none",
+                
+                },
+            }}
+            closeOnClickOutside={false}
+            closeOnEscape={true}
+            trapFocus
+        >
+            <Text mb="md">
+                Confirma eliminación del usuario {" "}
+                <strong>{userName}</strong> ?
+                Esta acción no puede deshacerse
+            </Text>
+
+            <Group
+                justify="flex-end"
+                mt="xl"
+            >
+                <Button
+                    variant="transparent"
+                    color="yellow"
+                    onClick={onClose}
+                >
+                    Cancelar
+                </Button>
+                <Button
+                    variant="transparent"
+                    color="red"
+                    onClick={onConfirm}
+                >
+                    Eliminar
+                </Button>
+            </Group>
+        </Modal>
+    );
+}
+

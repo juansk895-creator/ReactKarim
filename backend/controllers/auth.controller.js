@@ -89,7 +89,7 @@ export async function loginUser(req, res) {
         }
         const token = generateToken(user);
 
-        console.log("TOKEN GENERADO EN LOGIN: ", token);
+        //console.log("TOKEN GENERADO EN LOGIN: ", token);
 
         const { password: _, ...userData } = user;
 

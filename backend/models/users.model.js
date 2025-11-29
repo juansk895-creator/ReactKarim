@@ -45,7 +45,7 @@ async function getUserById(id) {
     return rows[0];
 }
 
-async function updateUser(id, { nombre, email, rol_id, status_id, password }) {
+async function updateUser(id, { nombre, apellido_pat, apellido_mat, email, num_tel, fecha_nac, rol_id, status_id, password }) {
     const parts = [];
     const values = [];
     let idx = 1;
@@ -55,7 +55,11 @@ name, email, role, status, created_at;`;
   values.push(id);
 */
     if (nombre !== undefined) { parts.push(`nombre = $${idx++}`); values.push(nombre); }
+    if (apellido_pat !== undefined) { parts.push(`apellido_pat = $${idx++}`); values.push(apellido_pat); }
+    if (apellido_mat !== undefined) { parts.push(`apellido_mat = $${idx++}`); values.push(apellido_mat); }
     if (email !== undefined) { parts.push(`email = $${idx++}`); values.push(email) }
+    if (num_tel !== undefined) { parts.push(`num_tel = $${idx++}`); values.push(num_tel) }
+    if (fecha_nac !== undefined) { parts.push(`fecha_nac = $${idx++}`); values.push(fecha_nac) }
     if (rol_id !== undefined) { parts.push(`rol_id = $${idx++}`); values.push(rol_id) }
     if (status_id !== undefined) { parts.push(`status_id = $${idx++}`); values.push(status_id) }
     if (password !== undefined) { parts.push(`password = $${idx++}`); values.push(password) }
@@ -63,8 +67,9 @@ name, email, role, status, created_at;`;
     if (parts.length === 0) return getUserById(id);
 
     const sql = `
-        UPDATE users SET ${parts.join(',')} WHERE id = $${idx} RETURNING id,
-        nombre, email, rol_id, status_id, created_at;`;
+        UPDATE users SET ${parts.join(',')}
+        WHERE id = $${idx}
+        RETURNING id, nombre, apellido_pat, apellido_mat, email, num_tel, fecha_nac, rol_id, status_id, created_at, updated_at;`;
     values.push(id);
 
     const { rows } = await pool.query(sql, values);
@@ -72,9 +77,18 @@ name, email, role, status, created_at;`;
 
 }
 
+async function updatePassword(id, hashedPassword) {
+    const { rows } = await pool.query(
+        `UPDATE users SET password = $1 WHERE id = $2 RETURNING id`,
+        [hashedPassword, id]
+    );
+    console.log("HASH GUARDADO:", hashedPassword);
+    return rows[0];
+}
+
 async function deleteUser(id) {
     const { rows } = await pool.query(
-        `DELETE FROM users WHERE id = $1 RETURNING id:`,
+        `DELETE FROM users WHERE id = $1 RETURNING id;`,
         [id]
     );
     return rows[0];
@@ -137,6 +151,7 @@ export {
     getUserByEmail,
     getUserById,
     updateUser,
+    updatePassword,
     deleteUser,
     getUsers
 };

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ActionIcon, Box, Button, Card, Divider, Group, TextInput, Select, Title, Paper, Loader } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
-import { IconArrowBackUp, IconX, IconDeviceFloppy } from "@tabler/icons-react";
+import { IconArrowBackUp, IconX, IconDeviceFloppy, IconLock } from "@tabler/icons-react";
 //
 import '@mantine/dates/styles.css';
 import '@mantine/core/styles.css';
@@ -11,6 +11,7 @@ import '@mantine/core/styles.layer.css';
 import { AuthContext } from "../../AuthContext";
 //Archivos
 import ModalConfirmUpdateUser from "../../components/ModalConfirmUpdateUser";
+import ModalChangePassword from "../../components/ModalChangePassword";
 
 export default function UsersEdit() {
 
@@ -25,6 +26,7 @@ export default function UsersEdit() {
 
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
+    const [modalPasswordOpen, setModalPasswordOpen] = useState(false);
 
     //Formulario
     const [form, setForm] = useState({
@@ -108,6 +110,8 @@ export default function UsersEdit() {
             console.error("Error PUT:", err);
         }
     };
+
+    const handleChangePassword = async () => {};
 
     if (loading) {
         return (
@@ -206,7 +210,7 @@ export default function UsersEdit() {
                     <DateInput
                         label="Fecha de nacimiento"
                         value={form.fecha_nac}
-                        onChange={(e) => handleChange("fecha_nac", e.target.value)}
+                        onChange={(value) => handleChange("fecha_nac", value)}
                     />
                 </Group>
 
@@ -228,7 +232,7 @@ export default function UsersEdit() {
 
                 <Divider my="md" />
 
-                <Group justify="flex-end">
+                <Group justify="space-between">
                     <Button
                         color="orange"
                         onClick={() => navigate("/dashboard/usersTable")}
@@ -236,6 +240,15 @@ export default function UsersEdit() {
                         leftSection={<IconX />}
                     >
                         Cancelar
+                    </Button>
+                    
+                    <Button
+                        color="cyan"
+                        variant="transparent"
+                        leftSection={<IconLock />}
+                        onClick={() => setModalPasswordOpen(true)}
+                    >
+                        Cambiar contraseña
                     </Button>
                     
                     <Button
@@ -256,6 +269,12 @@ export default function UsersEdit() {
                 onClose={() => setModalOpen(false)}
                 onConfirm={handleConfirmUpdate}
                 userName={form.nombre}
+            />
+
+            <ModalChangePassword
+                opened={modalPasswordOpen}
+                onClose={() => setModalPasswordOpen(false)}
+                userId={id}
             />
 
         </Box>

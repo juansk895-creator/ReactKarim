@@ -5,6 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 //import e, { response } from "express"; //express no se usa en frontend
 
+//
+import '@mantine/dates/styles.css';
+import '@mantine/core/styles.css';
+import '@mantine/core/styles.layer.css';
+//
+
 export default function Login() {
 
     const [email, setEmail] = useState('');

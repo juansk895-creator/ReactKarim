@@ -1,15 +1,8 @@
-
-//const express = require('express');
-//const usersCtrl = require('../controllers/users.controller');
-//const auth = require('../utils/auth.middleware');
-
 import express from 'express';
-//import { Router } from 'express';
 import * as usersCtrl from '../controllers/users.controller.js';
-import * as auth from '../utils/auth.middleware.js';
+import { verifyToken, requireAdmin, requireAdminOrOwner } from '../utils/auth.middleware.js';
 
 const router = express.Router();
-//const router = Router(); ? 
 
 //Público
 router.post('/login', usersCtrl.login);
@@ -18,20 +11,25 @@ router.post('/login', usersCtrl.login);
 //router.use(auth.verifyToken); //descomentar al confirmar el funcionamiento del fetch
 
 //CRUD - Usuarios
-//router.get('/users', usersCtrl.listUsers);
-//router.get('/', listUsers);
-router.get('/', auth.verifyToken, auth.requireAdmin, usersCtrl.listUsers);
+// Lista de usuarios
+router.get('/', verifyToken, requireAdmin, usersCtrl.listUsers);
+
 //GET - id
-//router.get('/users/:id', usersCtrl.getUser);
-router.get('/:id', usersCtrl.getUser);
-//PATCH - Cambiar estado
-router.patch('/:id/status', auth.verifyToken, auth.requireAdmin, usersCtrl.updateStatusC);
-//POST - Solo administradores
-//router.post('/users', auth.requireAdmin, usersCtrl.saveUser);
-router.post('/', auth.verifyToken, auth.requireAdmin, usersCtrl.saveUser);
-//PUT - id, administradores y el propio usuario de la cuenta
-router.put('/users/:id', auth.requireAdminOrOwner, usersCtrl.updateUserC);
-//DELETE - id, solo administradores
-router.delete('/users/:id', auth.requireAdmin, usersCtrl.deleteUserC);
+router.get('/:id', verifyToken, usersCtrl.getUser);
+
+//PATCH - Cambiar estado, administradores
+router.patch('/:id/status', verifyToken, requireAdmin, usersCtrl.updateStatusC);
+
+//PATCH - Cambiar contraseña, administradores y el propio usuario de la cuenta
+router.patch('/:id/password', verifyToken, requireAdminOrOwner, usersCtrl.updatePasswordC);
+
+//POST - Registrar usuario, Solo administradores
+router.post('/', verifyToken, requireAdmin, usersCtrl.saveUser);
+
+//PUT - Actualizar usuario, administradores y el propio usuario de la cuenta
+router.put('/:id', verifyToken, requireAdminOrOwner, usersCtrl.updateUserC);
+
+//DELETE - Eliminar usuario, solo administradores
+router.delete('/:id', verifyToken, requireAdmin, usersCtrl.deleteUserC);
 
 export default router;

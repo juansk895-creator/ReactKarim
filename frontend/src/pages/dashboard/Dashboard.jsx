@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 //mantine
-import { ActionIcon, AppShell, Box, Button, Collapse, Group, Modal, Portal, Text, Tooltip, Transition, useMantineTheme } from "@mantine/core";
+import { ActionIcon, AppShell, Box, Button, Collapse, Group, Modal, Portal, Stack, Text, Tooltip, Transition, useMantineTheme } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';  // Revisar si es necesario al final
 //
 import '@mantine/dates/styles.css';
@@ -43,7 +43,7 @@ export function SidebarItem({
           display: "flex",
           alignItems: "center",
           justifyContent: "center", // "center" : "center" ?
-          transition: "all 0.5s ease",
+          //transition: "all 0.5s ease",
           position: "relative", // "absolute" ?
           backgroundColor: active ? activeColor : hovered ? hoverColor : baseColor,
           cursor: "pointer",
@@ -55,7 +55,7 @@ export function SidebarItem({
             alignItems: "center",
             gap: 10,
             position: "center",
-            left: hasSubmenu ? "-0.4rem" : 0, // realmente compensa ?
+            //left: hasSubmenu ? "-0.4rem" : 0, // realmente compensa ?
           }}
         >
           <Icon stroke={2} size="1.3rem" />
@@ -168,7 +168,7 @@ export default function Dashboard() {
             flexDirection: "column",
             alignItems: "stretch",
             padding: "1rem 0.5rem",
-            gap: "1rem",
+            //gap: "1rem",
           }}
         >
           <Group
@@ -201,13 +201,14 @@ export default function Dashboard() {
             />
           </Group>
 
-          <Group
+          <Stack
             //direction="column"
-            //gap="sm"
+            gap="xs"
             justify="center"
             style={{
-              gap: "1rem",
-              
+              //gap: "1rem",
+              width: "100%",
+              //padding: "0.5rem",
             }}
           >
             <SidebarItem
@@ -229,6 +230,7 @@ export default function Dashboard() {
               onClick={() => {
                 setActiveItem("usuarios");
                 setShowStats((prev) => false);
+                navigate("usersTable");
               }}
             />
 
@@ -291,7 +293,7 @@ export default function Dashboard() {
                 setShowStats((prev) => false);
               }}
             />
-          </Group>
+          </Stack>
 
         </AppShell.Section>
         {/* main */}
