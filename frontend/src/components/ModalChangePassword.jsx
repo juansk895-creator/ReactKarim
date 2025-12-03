@@ -45,7 +45,7 @@ export default function ModalChangePassword({
         setLoading(true);
 
         try {
-            const res = await secureFetch(`/api/users/${userId}/password`, {
+            await secureFetch(`/api/users/${userId}/password`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -54,10 +54,10 @@ export default function ModalChangePassword({
                 }),
             });
 
-            if (!res.ok) {
+            /*if (!res.ok) {
                 const err = await res.json();
                 throw new Error(err.message || "Error al cambiar contraseña");
-            }
+            }*/
 
             notifications.show({
                 title: "Contraseña actualizada",
@@ -74,7 +74,7 @@ export default function ModalChangePassword({
             notifications.show({
                 title: "Error interno",
                 color: "red",
-                message: err.message,
+                message: err.message || "No se pudo cambiar la contraseña",
                 icon: <IconX />
             });
         } finally {
@@ -148,7 +148,7 @@ export default function ModalChangePassword({
 
             <Stack>
                 <PasswordInput
-                    label="Contraseña actual"
+                    label="Contraseña actual (Falta validar)"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                 />

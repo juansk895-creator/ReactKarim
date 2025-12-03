@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 //const jwt = require('jsonwebtoken');
 import { hashPassword, comparePassword } from '../utils/encrypt.js';
 //createUser,getUserByEmail,getUserById,updateUser,deleteUser,getUsers
-import { createUser,getUserByEmail,getUserById,updateUser,updatePassword,deleteUser,getUsers } from '../models/users.model.js';
+import { createUser,getUserByEmail,getUserById,updateUser,updatePassword,
+    deleteUser, getStatsRoles, getStatsStatus, getStatsAge, getUsers } from '../models/users.model.js';
 
 import { pool } from "../db.js";
 import { generateToken } from "../utils/jwt.js";
@@ -260,6 +261,36 @@ async function deleteUserC(req, res) {
     }
 }
 
+async function getStatsRolesC(req, res) {
+    try {
+        const data = await getStatsRoles();
+        res.json({ ok: true, data });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ ok: false, message: 'Error al obtener estadísticas por rol'});
+    }
+}
+
+async function getStatsStatusC(req, res) {
+    try {
+        const data = await getStatsStatus();
+        res.json({ ok: true, data });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ ok: false, message: 'Error al obtener estadísticas por status'});
+    }
+}
+
+async function getStatsAgeC(req, res) {
+    try {
+        const data = await getStatsAge();
+        res.json({ ok: true, data });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ ok: false, message: 'Error al obtener estadísticas por edad'});
+    }
+}
+
 export {
     login,
     saveUser,
@@ -268,6 +299,9 @@ export {
     listUsers,
     getUser,
     updateUserC,
-    deleteUserC
+    deleteUserC,
+    getStatsRolesC,
+    getStatsStatusC,
+    getStatsAgeC
 };
 

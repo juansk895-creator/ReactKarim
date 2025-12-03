@@ -146,6 +146,53 @@ async function getUsers({ page = 1, pageSize = DEFAULT_PAGE_SIZE, rol_id, q }) {
     };
 }
 
+// Estadísticas
+async function getStatsRoles() {
+    const sql = `
+        SELECT rol_id, COUNT(*)::int AS total
+        FROM users
+        GROUP BY rol_id
+        ORDER BY rol_id;
+    `;
+    const { rows } = await pool.query(sql);
+    return rows;
+}
+
+async function getStatsStatus() {
+    const sql = `
+        SELECT status_id, COUNT(*)::int AS total
+        FROM users
+        GROUP BY status_id
+        ORDER BY status_id;
+    `;
+    const { rows } = await pool.query(sql);
+    return rows;
+}
+
+async function getStatsAge() {
+    const sql = `
+        SELECT
+        CASE
+            WHEN edad BETWEEN 18 AND 30 THEN '18-30'
+            WHEN edad BETWEEN 31 AND 40 THEN '31-40'
+            WHEN edad BETWEEN 41 AND 50 THEN '41-50'
+            WHEN edad BETWEEN 51 AND 60 THEN '51-60'
+            WHEN edad >= 61 THEN '60+'
+            ELSE 'sin fecha'
+        END as rango,
+        COUNT(*)::INT AS total
+        FROM (
+            SELECT id, DATE_PART('year', AGE(fecha_nac))::int AS edad
+            FROM users
+            WHERE fecha_nac IS NOT NULL
+        ) AS edades
+        GROUP BY rango
+        ORDER BY rango;
+    `;
+    const { rows } = await pool.query(sql);
+    return rows;
+}
+
 export {
     createUser,
     getUserByEmail,
@@ -153,6 +200,9 @@ export {
     updateUser,
     updatePassword,
     deleteUser,
+    getStatsRoles,
+    getStatsStatus,
+    getStatsAge,
     getUsers
 };
 

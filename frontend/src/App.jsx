@@ -7,12 +7,13 @@ import { MantineProvider } from '@mantine/core';
 //Rutas definidas y testeadas
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
-//rutas por testear
-import ProfileView from "./pages/profile/ProfileView.jsx";
-import ProfileEdit from "./pages/profile/ProfileEdit.jsx";
 import UsersTable from "./pages/users/UsersTable.jsx";
 import UsersRegister from "./pages/users/UsersRegister.jsx";
 import UsersEdit from "./pages/users/UsersEdit.jsx";
+//rutas por testear
+import ProfileView from "./pages/profile/ProfileView.jsx";
+import ProfileEdit from "./pages/profile/ProfileEdit.jsx";
+import Graphics from "./pages/stats/Graphics.jsx";
 
 const PrivateRoute = ({ children }) => {
     const { token } = useContext(AuthContext);
@@ -36,6 +37,7 @@ export default function App() {
                             <Route path="usersTable" element={<UsersTable />} />
                             <Route path="usersRegister" element={<UsersRegister />} />
                             <Route path="usersEdit/:id" element={<UsersEdit />} />
+                            <Route path="stats/graphics" element={<Graphics />} />
                         </Route>
                     </Routes>
                 </Router>

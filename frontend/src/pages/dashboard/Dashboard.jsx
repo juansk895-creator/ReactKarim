@@ -11,7 +11,7 @@ import '@mantine/core/styles.layer.css';
 //Íconos
 import { IconLayoutSidebarRightCollapse, IconLayoutSidebarLeftCollapse,
   IconUserCircle, IconUsers, IconFileText, IconChartBar, IconHistory,
-  IconChevronRight, IconChartPie, IconLogout2, IconXboxX } from "@tabler/icons-react";
+  IconChevronRight, IconChartPie, IconLogout2, IconXboxX, IconHome } from "@tabler/icons-react";
 //Archivos
 import ProfileView from "../profile/ProfileView";
 import { AuthContext } from "../../AuthContext";
@@ -113,9 +113,40 @@ export default function Dashboard() {
           backgroundColor: theme.colors.dark[7], //Revisar tono
         }}
       >
-        <Text fw={500} >
-          GESTIÓN DE USUARIOS
-        </Text>
+        <Group
+          align="center"
+          gap="sm"
+        >
+          <Tooltip
+            label="Inicio"
+            withinPortal={false}
+          >
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={() => navigate("/dashboard")}
+              style={{
+                backgroundColor: theme.colors.gray[9],
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onMouseEnter={(e) => {
+                const icon = e.currentTarget.querySelector("svg");
+                if (icon) icon.style.color = theme.colors.blue[4];
+              }}
+              onMouseLeave={(e) => {
+                const icon = e.currentTarget.querySelector("svg");
+                if (icon) icon.style.color = theme.colors.gray[1];
+              }}
+            >
+              <IconHome stroke={2} />
+            </ActionIcon>
+          </Tooltip>
+          <Text fw={500} >
+            GESTIÓN DE USUARIOS
+          </Text>
+        </Group>
 
         {/* Cerrar <ModalLogoutConfirm /> sesión */}
         <Tooltip
@@ -230,7 +261,7 @@ export default function Dashboard() {
               onClick={() => {
                 setActiveItem("usuarios");
                 setShowStats((prev) => false);
-                navigate("usersTable");
+                navigate("/dashboard/usersTable");
               }}
             />
 
@@ -267,7 +298,10 @@ export default function Dashboard() {
                     label="Gráficas"
                     collapsed={collapsed}
                     active={activeItem === "graficas"}
-                    onClick={() => setActiveItem("graficas")}
+                    onClick={() => {
+                      setActiveItem("graficas");
+                      navigate("/dashboard/stats/graphics");
+                    }}
                   />
 
                   <SidebarItem

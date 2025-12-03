@@ -14,6 +14,11 @@ router.post('/login', usersCtrl.login);
 // Lista de usuarios
 router.get('/', verifyToken, requireAdmin, usersCtrl.listUsers);
 
+//ESTADÍSTICAS - Revisar cuestión de permisos
+router.get('/stats/roles', verifyToken, requireAdmin, usersCtrl.getStatsRolesC);
+router.get('/stats/status', verifyToken, requireAdmin, usersCtrl.getStatsStatusC);
+router.get('/stats/age', verifyToken, requireAdmin, usersCtrl.getStatsAgeC);
+
 //GET - id
 router.get('/:id', verifyToken, usersCtrl.getUser);
 
