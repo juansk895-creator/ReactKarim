@@ -14,6 +14,7 @@ import UsersEdit from "./pages/users/UsersEdit.jsx";
 import ProfileView from "./pages/profile/ProfileView.jsx";
 import ProfileEdit from "./pages/profile/ProfileEdit.jsx";
 import Graphics from "./pages/stats/Graphics.jsx";
+import Reports from "./pages/stats/Reports.jsx";
 
 const PrivateRoute = ({ children }) => {
     const { token } = useContext(AuthContext);
@@ -38,6 +39,7 @@ export default function App() {
                             <Route path="usersRegister" element={<UsersRegister />} />
                             <Route path="usersEdit/:id" element={<UsersEdit />} />
                             <Route path="stats/graphics" element={<Graphics />} />
+                            <Route path="stats/reports" element={<Reports />} />
                         </Route>
                     </Routes>
                 </Router>

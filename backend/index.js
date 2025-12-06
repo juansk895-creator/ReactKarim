@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.routes.js";
 import usersRouter from "./routes/users.routes.js";
+import reportRoutes from './routes/reports.routes.js';
 
 //dotenv.config(); // Revisar uso
 dotenv.config({ path: "./.env" }); // Revisar uso
@@ -32,6 +33,7 @@ app.use(express.json());
 //Rutas api
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRouter);
+app.use("/api/reports", reportRoutes);
 
 //Test
 app.get("/api/test", async (req, res) => {

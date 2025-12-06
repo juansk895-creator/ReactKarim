@@ -309,7 +309,10 @@ export default function Dashboard() {
                     label="Reportes"
                     collapsed={collapsed}
                     active={activeItem === "reportes"}
-                    onClick={() => setActiveItem("reportes")}
+                    onClick={() => {
+                      setActiveItem("reportes");
+                      navigate("/dashboard/stats/reports");
+                    }}
                   />
                 </Group>
                 </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ActionIcon, Box, Card, Center, Loader, SimpleGrid, Text, Title} from "@mantine/core";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Legend, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
 import { notifications } from "@mantine/notifications";
 //Íconos
 import { IconX, IconArrowBackUp } from "@tabler/icons-react";
@@ -13,70 +13,77 @@ import '@mantine/core/styles.css';
 import '@mantine/core/styles.layer.css';
 //
 
+const COLORS = ["#00bcd4", "#ff9800", "#4caf50", "#f44336", "#9c27b0", "#3f51b5"];
+
+const roleNames = {
+    1: "Administrador",
+    2: "Titular",
+    3: "Analista",
+};
+
+const statusNames = {
+    1: "Activo",
+    2: "Inactivo",
+};
 
 export default function Graphics() {
-    const [rolesData, setRolesData] = useState(null);
-    const [statusData, setStatusData] = useState(null);
-    const [ageData, setAgeData] = useState(null);
+    const [roles, setRoles] = useState(null);
+    const [status, setStatus] = useState(null);
+    const [ages, setAges] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    
-
     const navigate = useNavigate();
-
-    const COLORS = ["#00bcd4", "#ff9800", "#4caf50", "#f44336", "#9c27b0", "#3f51b5"];
-
-    const fetchStats = async () => {
-        try {
-            const [rolesRes, statusRes, ageRes] = await Promise.all([
-                secureFetch("/api/users/stats/roles"),
-                secureFetch("/api/users/stats/status"),
-                secureFetch("/api/users/stats/age"),
-            ]);
-
-            if (!rolesRes.ok || !statusRes.ok || !ageRes.ok) {
-                throw new Error("Error en la obtención de estadísticas");
-            }
-
-            const rolesJSON = await rolesRes.json();
-            const statusJSON = await statusRes.json();
-            const ageJSON = await ageRes.json();
-
-            setRolesData(
-                rolesJSON.data.map((r) => ({
-                    name: `Rol ${r.rol_id}`,
-                    value: r.total,
-                }))
-            );
-
-            setStatusData(
-                statusJSON.data.map((s) => ({
-                    name: s.status_id === 1 ? "Activo" : "Inactivo",
-                    value: s.total,
-                }))
-            );
-
-            setAgeData(
-                ageJSON.data.map((a) => ({
-                    name: a.rango,
-                    value: a.total,
-                }))
-            );
-        } catch (err) {
-            notifications.show({
-                title: "Error",
-                message: err.message,
-                color: "red",
-                icon: <IconX />,
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    
     useEffect(() => {
-        fetchStats();
+        async function loadData() {
+            try {
+                const [r, s, a] = await Promise.all([
+                    secureFetch("/api/users/stats/roles"),
+                    secureFetch("/api/users/stats/status"),
+                    secureFetch("/api/users/stats/age"),
+                ]);
+
+                const rolesJson = await r.json();
+                const statusJson = await s.json();
+                const agesJson = await a.json();
+
+                setRoles(rolesJson.data || []);
+                setStatus(statusJson.data || []);
+                setAges(agesJson.data || []);
+                
+            } catch (err) {
+                console.error("Error al cargar estadísticas:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadData();
     }, []);
+
+    const rolesProcessed = (roles ?? []).map(r => ({
+        name: roleNames[r.rol_id] || `Rol ${r.rol_id}`,
+        value: r.total,
+    }));
+
+    const statusProcessed = (status ?? []).map(s => ({
+        name: statusNames[s.status_id] || `Estado ${s.status_id}`,
+        value: s.total,
+    }));
+
+    const totalAges = (ages ?? []).reduce((acc, item) => acc + item.total, 0);
+
+    const agesProcessed = (ages ?? []).map(a => {
+
+        const percent = totalAges > 0 ? ((a.total / totalAges) * 100).toFixed(1) : "0.0";
+        
+        return {
+            range: a.rango,
+            usuarios: a.total,
+            label: `${a.total} (${percent}%)`,
+        };
+    });
+
 
     if (loading) {
         return (
@@ -85,6 +92,8 @@ export default function Graphics() {
             </Center>
         );
     }
+
+    
 
     return (
         <Box
@@ -163,23 +172,37 @@ export default function Graphics() {
                         <PieChart
                             width={350}
                             height={300}
+                            margin={{
+                                //top: 20,
+                                //right: 60,
+                                //bottom: 20,
+                                //left: 60,
+                            }}
                         >
                             <Pie
-                                data={rolesData}
+                                data={rolesProcessed}
                                 cx="50%"
                                 cy="50%"
-                                labelLine={false}
-                                outerRadius={110}
+                                outerRadius={90}
                                 fill="#8884d8"
                                 dataKey="value"
-                                label
+                                nameKey="name"
+                                startAngle={45}
+                                endAngle={405}
+                                label={({ value, percent }) => 
+                                    `${value}-(${(percent * 100).toFixed(1)}%)`
+                                }
+                                labelLine={false}
                             >
-                                {rolesData.map((_, i) => (
-                                    <Cell key={`cell-rol-${i}`} fill={COLORS[i % COLORS.length]} />
+                                {rolesProcessed.map((entry, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]}
+                                    />
                                 ))}
                             </Pie>
                             <Tooltip />
-                            <Legend />
+                            <Legend layout="radial"/>
                         </PieChart>
                     </Center>
                 </Card>
@@ -202,21 +225,27 @@ export default function Graphics() {
                             height={300}
                         >
                             <Pie
-                                data={statusData}
+                                data={statusProcessed}
                                 cx="50%"
                                 cy="50%"
-                                labelLine={false}
-                                outerRadius={110}
+                                outerRadius={90}
                                 fill="#82ca9d"
                                 dataKey="value"
-                                label
+                                nameKey="name"
+                                label={({ value, percent }) => 
+                                    `${value}-(${(percent * 100).toFixed(1)}%)`
+                                }
+                                labelLine={false}
                             >
-                                {statusData.map((_, i) => (
-                                    <Cell key={`cell-status-${i}`} fill={COLORS[i % COLORS.length]} />
+                                {statusProcessed.map((entry, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]}
+                                    />
                                 ))}
                             </Pie>
                             <Tooltip />
-                            <Legend />
+                            <Legend layout="radial"/>
                         </PieChart>
                     </Center>
                 </Card>
@@ -238,20 +267,24 @@ export default function Graphics() {
                         <BarChart
                             width={600}
                             height={350}
-                            data={ageData}
+                            data={agesProcessed}
                         >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
+                            <XAxis dataKey="range" />
                             <YAxis allowDecimals={false} />
                             <Tooltip />
                             <Legend />
                             <Bar
-                                dataKey="value"
+                                dataKey="usuarios"
                                 fill="#00bcd4"
+
                             >
-                                {ageData.map((_, i) => (
-                                    <Cell key={`cell-age-${i}`} fill={COLORS[i % COLORS.length]} />
-                                ))}
+                                <LabelList
+                                    dataKey="label"
+                                    position="top"
+                                    //formatter={(v, entry) => `${entry.value} (${v}%)`}
+                                    style={{ fill: "white", fontSize: "14px" }}
+                                />
                             </Bar>
                         </BarChart>
                     </Center>

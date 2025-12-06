@@ -193,6 +193,17 @@ async function getStatsAge() {
     return rows;
 }
 
+// Reportes
+async function getReportByRole(rol_id) {
+    const { rows } = await pool.query(
+        `SELECT id, nombre, apellido_pat, apellido_mat, email, status_id
+        FROM users
+        WHERE rol_id = $1`,
+        [rol_id]
+    );
+    return rows;
+}
+
 export {
     createUser,
     getUserByEmail,
@@ -203,6 +214,7 @@ export {
     getStatsRoles,
     getStatsStatus,
     getStatsAge,
+    getReportByRole,
     getUsers
 };
 
