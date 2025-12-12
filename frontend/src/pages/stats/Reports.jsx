@@ -36,24 +36,53 @@ export default function Reports() {
         console.log("DEBUG includeChart =", includeChart);
         console.log("DEBUG chartBase64 =", chartBase64?.slice(0, 50));
 
-        const res = await secureFetch(`/api/reports/users/role/${role}/pdf`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                includeChart,
-                chartBase64
-            })
-        });
+        try {
+            const res = await secureFetch(`/api/reports/users/role/${role}/pdf`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    includeChart,
+                    chartBase64
+                })
+            });
 
-        if (!res.ok) {
-            return alert("Error generando PDF (frontend)");
+            if (!res || !res.ok) {
+                return alert("Error generando reporte PDF (frontend)");
+            }
+
+            const blob = await res.blob();
+
+            if (window.showSaveFilePicker) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: `reporte_rol_${role}.pdf`,
+                        types: [{
+                            description: "PDF File",
+                            accept: { "application/pdf": [".pdf"] }
+                        }]
+                    });
+
+                    const writable = await handle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+
+                    console.log("PDF guardado manualmente con FilePicker");
+                    return;
+                } catch (pickerError) {
+                    console.warn("FilePicker cancelado o falló, usando descarga normal", pickerError);
+                }
+            }
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `reporte_rol_${role}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Error generando reporte en PDF (frontend):", err);
+            alert("Error interno al generar PDF");
         }
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `reporte_rol_${role}.pdf`;
-        a.click();
     };
 
     // Finalizar
@@ -66,20 +95,64 @@ export default function Reports() {
             return;
         }
 
-        const res = await secureFetch(`/api/reports/users/role/${role}/excel`, {
-            method: "POST"
-        });
+        console.log("DEBUG role =", role);
+        console.log("DEBUG includeChart =", includeChart);
+        console.log("DEBUG chartBase64 =", chartBase64 ? "OK" : "VACÍO");
 
-        if (!res.ok) {
-            return alert("Error generando Excel (frontend");
+        try {
+            const res = await secureFetch(`/api/reports/users/role/${role}/excel`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    includeChart,
+                    chartBase64
+                })
+            });
+
+            if (!res || !res.ok) {
+                alert("Error generando Excel (frontend)");
+                return;
+            }
+
+            const blob = await res.blob();
+
+            if (window.showSaveFilePicker) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: `reporte_rol_${role}.xlsx`,
+                        types: [{
+                            description: "Excel File",
+                            accept: {
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"]
+                            }
+                        }]
+                    });
+
+                    const writable = await handle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+
+                    console.log("Excel guardado manualmente con FilePicker");
+                    return;
+                } catch (pickerError) {
+                    console.warn("FilePicker cancelado o falló, usando descarga normal", pickerError);
+                }
+            }
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `reporte_rol_${role}.xlsx`;
+            a.click();
+
+            window.URL.revokeObjectURL(url);
+
+        } catch (err) {
+            console.error("Error generando reporte en Excel (frontend):", err);
+            alert("Error interno al generar Excel");
         }
-
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `reporte_rol_${role}.xlsx`;
-        a.click();
     };
     
     return (
