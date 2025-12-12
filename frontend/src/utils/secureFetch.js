@@ -3,6 +3,10 @@ export async function secureFetch(url, options = {}) {
     try {
         const token = localStorage.getItem("token");
 
+        if (url.startsWith("/api")) {
+            url = `http://localhost:4000${url}`;
+        }
+
         const finalOptions = {
             ...options,
             headers: {
@@ -29,8 +33,3 @@ export async function secureFetch(url, options = {}) {
         throw error;
     }
 }
-
-
-
-
-

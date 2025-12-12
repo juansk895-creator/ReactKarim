@@ -17,13 +17,25 @@ export default function Reports() {
 
     const [role, setRole] = useState(null);
     const [includeChart, setIncludeChart] = useState(false);
-    const [chartBase64, setChartBase54] = useState("");
+    const [chartBase64, setChartBase64] = useState("");
 
     const navigate = useNavigate();
 
     // Obtener gráfica desde Graphics.jsx, ó considerar su reconstrucción aquí
     //
     const handleGeneratePDF = async () => {
+
+        console.log("CLICK PDF -> role =", role);
+
+        if(!role) {
+            alert("Selecciona un rol antes de generar el PDF");
+            return;
+        }
+
+        console.log("DEBUG role =", role);
+        console.log("DEBUG includeChart =", includeChart);
+        console.log("DEBUG chartBase64 =", chartBase64?.slice(0, 50));
+
         const res = await secureFetch(`/api/reports/users/role/${role}/pdf`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -45,7 +57,30 @@ export default function Reports() {
     };
 
     // Finalizar
-    const handleGenerateExcel = async () => {};
+    const handleGenerateExcel = async () => {
+
+        console.log("CLICK EXCEL -> role =", role);
+
+        if (!role) {
+            alert("Selecciona un rol para generar el reporte");
+            return;
+        }
+
+        const res = await secureFetch(`/api/reports/users/role/${role}/excel`, {
+            method: "POST"
+        });
+
+        if (!res.ok) {
+            return alert("Error generando Excel (frontend");
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `reporte_rol_${role}.xlsx`;
+        a.click();
+    };
     
     return (
         <Box
@@ -103,24 +138,61 @@ export default function Reports() {
             
             <Divider my="md" />
 
-            <Group>
-                <Button
-                    variant="transparent"
-                    color="red"
-                    rightSection={<IconFileTypePdf />}
-                    //disabled={!role} // Qué roles se les permitirá ?
-                    onClick={handleGeneratePDF}
+            <Paper
+                p="lg"
+                shadow="md"
+            >
+                <Text
+                    fw={700}
+                    size="xl"
+                    mb="md"
                 >
-                    Decargar
-                </Button>
-                <Button
-                    variant="transparent"
-                    color="green"
-                    rightSection={<IconFileTypeXls />}
-                >
-                    Descargar
-                </Button>
-            </Group>
+                    Reportes por rol
+                </Text>
+
+                <Select
+                    label="Selecciona rol"
+                    placeholder="Elige un rol"
+                    radius="md"
+                    data={[
+                        { value: "1", label: "Administrador" },
+                        { value: "2", label: "Titular" },
+                        { value: "3", label: "Analista" },
+                    ]}
+                    value={role}
+                    onChange={setRole}
+                />
+
+                <Checkbox
+                    label="Incluir gráfica en el PDF"
+                    mt="md"
+                    checked={includeChart}
+                    onChange={(e) => setIncludeChart(e.currentTarget.checked)}
+                />
+
+                <Divider my="md" />
+
+                <Group>
+                    <Button
+                        variant="transparent"
+                        color="red"
+                        rightSection={<IconFileTypePdf />}
+                        //disabled={!role} // Qué roles se les permitirá ?
+                        onClick={handleGeneratePDF}
+                    >
+                        Decargar
+                    </Button>
+                    <Button
+                        variant="transparent"
+                        color="green"
+                        rightSection={<IconFileTypeXls />}
+                        onClick={handleGenerateExcel}
+                    >
+                        Descargar
+                    </Button>
+                </Group>
+
+            </Paper>
 
         </Box>
     );
