@@ -204,6 +204,47 @@ async function getReportByRole(rol_id) {
     return rows;
 }
 
+async function getReportByStatus(status_id) {
+    const { rows } = await pool.query(
+        `SELECT u.id, u.nombre, u.apellido_pat, u.apellido_mat, u.email, u.num_tel,
+            u.fecha_nac, r.nombre AS rol_nombre, s.estado AS estado
+        FROM users u
+        JOIN roles r ON r.id = u.rol_id
+        JOIN status s ON s.id = u.status_id
+        WHERE u.status_id = $1
+        ORDER BY r.id, u.nombre
+        `,
+        [status_id]
+    );
+    return rows;
+}
+
+async function getReportAllRoles() {
+    const { rows } = await pool.query(
+        `SELECT u.id, u.nombre, u.apellido_pat, u.apellido_mat, u.email,
+            r.nombre AS rol, s.estado AS estado
+        FROM users u
+        JOIN roles r ON r.id = u.rol_id
+        JOIN status s ON s.id = u.status_id
+        ORDER BY r.id, s.id, u.nombre
+        `
+    );
+    return rows;
+}
+
+async function getReportGeneral() {
+    const { rows } = await pool.query(
+        `SELECT u.id, u.nombre, u.apellido_pat, u.apellido_mat, u.email, u.num_tel,
+            u.fecha_nac, r.nombre AS rol_nombre, s.estado AS estado
+        FROM users u
+        JOIN roles r ON r.id = u.rol_id
+        JOIN status s ON s.id = u.status_id
+        ORDER BY r.id, s.id, u.nombre
+        `
+    );
+    return rows;
+}
+
 export {
     createUser,
     getUserByEmail,
@@ -215,6 +256,9 @@ export {
     getStatsStatus,
     getStatsAge,
     getReportByRole,
+    getReportByStatus,
+    getReportAllRoles,
+    getReportGeneral,
     getUsers
 };
 

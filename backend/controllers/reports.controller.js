@@ -1,8 +1,13 @@
 import PDFDocument from 'pdfkit';
 import ExcelJS from 'exceljs';
-import { getReportByRole } from '../models/users.model.js';
+// Archivos
+import { getReportByRole, getReportByStatus,
+    getReportAllRoles,
+    getReportGeneral } from '../models/users.model.js';
+import { generatePDF } from '../utils/pdf.utils.js';
+import { generateExcel } from '../utils/excel.utils.js';
 
-
+// PDF
 async function getReportByRolePDF(req, res) {
     try {
         const roleId = req.params.rol_id;
@@ -10,7 +15,7 @@ async function getReportByRolePDF(req, res) {
 
         const users = await getReportByRole(roleId);
 
-        const doc = new PDFDocument({ margin: 40 });
+        /*const doc = new PDFDocument({ margin: 40 });
         res.setHeader('Content-Disposition', `attachment; filename=reporte_rol_${roleId}.pdf`);
         res.setHeader('Content-Type', 'application/pdf');
 
@@ -39,24 +44,77 @@ async function getReportByRolePDF(req, res) {
                 `${u.id} - ${u.nombre} ${u.apellido_pat || ''} ${u.apellido_mat || ''} | ${u.email} | Estado: ${u.status_id}`
             );
         });
-        doc.end();
+        doc.end();*/
+
+        generatePDF({
+            res,
+            filename: `reporte_rol_${roleId}.pdf`,
+            title: "Reporte de Usuarios por Rol",
+            subtitle: `Rol ID: ${roleId}`,
+            users,
+            includeChart,
+            chartBase64
+        });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error generando PDF' });
+        res.status(500).json({ message: 'Error generando PDF por rol (backend)' });
     }
 }
 
+async function getReportByStatusPDF(req, res) {
+    try {
+        //const { status_id } = req.params;
+        //const data = await getReportByStatus(status_id);
+
+        const statusId = req.params.status_id;
+        const { includeChart, chartBase64 } = req.body;
+
+        const users = await getReportByStatus(statusId);
+
+        generatePDF({
+            res,
+            filename: `reporte_estado_${statusId}.pdf`,
+            title: "Reporte de usuarios por Estado",
+            subtitle: `Estado ID: ${statusId}`,
+            users,
+            includeChart,
+            chartBase64
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error generando PDF por estado (backend)" });
+    }
+}
+
+async function getReportGeneralPDF(req, res) {
+    try {
+        const users = await getReportGeneral();
+
+        generatePDF({
+            res,
+            filename: "Reporte_general_usuarios.pdf",
+            title: "Reporte General de Usuarios",
+            subtitle: "Todos los roles y estados",
+            users
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error generando PDF general (backend)" });
+    }
+}
+
+
+// EXCEL
 async function getReportByRoleExcel(req, res) {
     try {
-        const rol_id = req.params.rol_id;
+        const roleId = req.params.rol_id;
+        const users = await getReportByRole(roleId);
 
-        const data = await getReportByRole(rol_id);
-
-        const workbook = new ExcelJS.Workbook();
-        const sheet = workbook.addWorksheet("Usuarios por rol");
+        //const workbook = new ExcelJS.Workbook();
+        //const sheet = workbook.addWorksheet("Usuarios por rol");
 
         // Encabezado
-        sheet.columns = [
+        /*sheet.columns = [
             { header: "ID", key: "id", width: 10 },
             { header: "Nombre", key: "nombre", width: 30 },
             { header: "Email", key: "email", width: 30 },
@@ -83,14 +141,113 @@ async function getReportByRoleExcel(req, res) {
 
         res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         res.setHeader("Content-Disposition", `attachment; filename=reporte_rol_${rol_id}.xlsx`);
-        res.send(buffer);
+        res.send(buffer);*/
+
+        await generateExcel({
+            res,
+            filename: `reporte_rol_${roleId}.xlsx`,
+            sheetName: "Usuarios por Rol",
+            title: `Reporte de Usuarios por Rol (${roleId})`,
+            columns: [
+                { header: "ID", key: "id", width: 10 },
+                { header: "Nombre", key: "nombre", width: 20 },
+                { header: "Apellido Paterno", key: "apellido_pat", width: 20 },
+                { header: "Apellido Materno", key: "apellido_mat", width: 20 },
+                { header: "Email", key: "email", width: 30 },
+                { header: "Estado", key: "estado", width: 15 }
+            ],
+            rows: users
+        });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ ok: false, message: "Error generado Excel" });
+        res.status(500).json({ ok: false, message: "Error generado Excel por rol (backend)" });
+    }
+}
+
+async function getReportByStatusExcel(req, res) {
+    try {
+        const statusId = req.params.status_id;
+        const users = await getReportByStatus(statusId);
+
+        await generateExcel({
+            res,
+            filename: `reporte_estado_${statusId}.xlsx`,
+            sheetName: "Usuarios por estado",
+            title: `Reporte de Usuarios por Estado (${statusId})`,
+            columns: [
+                { header: "ID", key: "id", width: 10 },
+                { header: "Nombre", key: "nombre", width: 20 },
+                { header: "Apellido Paterno", key: "apellido_pat", width: 20 },
+                { header: "Apellido Materno", key: "apellido_mat", width: 20 },
+                { header: "Email", key: "email", width: 30 },
+                { header: "Rol", key: "rol", width: 20 },
+            ],
+            rows: users
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error generando Excel por estado (backend)" });
+    }
+}
+
+async function getReportGeneralExcel(req, res) {
+    try {
+        const users = await getReportGeneral();
+
+        //const workbook = new ExcelJS.Workbook();
+        //const sheet = workbook.addWorksheet("Usuarios");
+
+        /*sheet.columns = [
+            { header: "ID", key: "id", width: 8 },
+            { header: "Nombre", key: "nombre", width: 20 },
+            { header: "Apellido Paterno", key: "apellido_pat", width: 20 },
+            { header: "Apellido Materno", key: "apellido_mat", width: 20 },
+            { header: "Email", key: "email", width: 30 },
+            { header: "Rol", key: "rol_nombre", width: 20 },
+            { header: "Estado", key: "estado", width: 15 },
+        ];
+
+        users.forEach(u => sheet.addRow(u));
+
+        res.setHeader(
+            "Content-Disposition",
+            "attachment; filename=reporte_general_usuarios.xlsx"
+        );
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        await workbook.xlsx.write(res);
+        res.end();*/
+
+        await generateExcel({
+            res,
+            filename: "reporte_general_usuarios.xlsx",
+            sheetName: "Reporte General",
+            title: "Reporte General de Usuarios",
+            columns: [
+                { header: "ID", key: "id", width: 10 },
+                { header: "Nombre", key: "nombre", width: 20 },
+                { header: "Apellido Paterno", key: "apellido_pat", width: 20 },
+                { header: "Apellido Materno", key: "apellido_mat", width: 20 },
+                { header: "Email", key: "email", width: 30 },
+                { header: "Rol", key: "rol_nombre", width: 20 },
+                { header: "Estado", key: "estado", width: 15 }
+            ],
+            rows: users
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error generando Excel general (backend)" });
     }
 }
 
 export {
     getReportByRolePDF,
+    getReportByStatusPDF,
+    getReportGeneralPDF,
     getReportByRoleExcel,
+    getReportByStatusExcel,
+    getReportGeneralExcel
 };
