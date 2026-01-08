@@ -28,7 +28,8 @@ app.use(
 );
 
 //Middleware base
-app.use(express.json());
+//app.use(express.json());
+app.use(express.json({ limit: "20mb" }));
 
 //Rutas api
 app.use("/api/auth", authRoutes);

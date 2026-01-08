@@ -7,6 +7,15 @@ import { getReportByRole, getReportByStatus,
 import { generatePDF } from '../utils/pdf.utils.js';
 import { generateExcel } from '../utils/excel.utils.js';
 
+const buildChartsArray = (charts) => {
+    if (!charts || typeof charts !== "object") {
+        return [];
+    }
+
+    const ordered = [charts.role, charts.status, charts.age].filter(Boolean);
+    return ordered;
+};
+
 // PDF
 async function getReportByRolePDF(req, res) {
     try {
@@ -53,7 +62,7 @@ async function getReportByRolePDF(req, res) {
             subtitle: `Rol ID: ${roleId}`,
             users,
             includeChart,
-            chartBase64
+            chartBase64,
         });
     } catch (err) {
         console.error(err);
@@ -78,7 +87,7 @@ async function getReportByStatusPDF(req, res) {
             subtitle: `Estado ID: ${statusId}`,
             users,
             includeChart,
-            chartBase64
+            chartBase64,
         });
     } catch (err) {
         console.error(err);
@@ -90,19 +99,27 @@ async function getReportGeneralPDF(req, res) {
     try {
         const users = await getReportGeneral();
 
+        console.log("DEBUG getReportGeneralPDF keys:", users?.[0] ? Object.keys(users[0]) : "NO USERS");
+        console.log("DEBUG getReportGeneralPDF first row:", users?.[0] || null);
+
+        const { includeChart, charts } = req.body;
+
+        const chartsBase64 = includeChart ? buildChartsArray(charts) : [];
+
         generatePDF({
             res,
             filename: "Reporte_general_usuarios.pdf",
             title: "Reporte General de Usuarios",
-            subtitle: "Todos los roles y estados",
-            users
+            subtitle: "Este documento muestra todos los usuarios existentes en el sistema. Se han ordenado en base al nivel del tipo de usuario y el estado que tengan", //"Todos los roles y estados",
+            users,
+            includeChart: !!includeChart,
+            chartsBase64,
         });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Error generando PDF general (backend)" });
     }
 }
-
 
 // EXCEL
 async function getReportByRoleExcel(req, res) {
@@ -156,7 +173,7 @@ async function getReportByRoleExcel(req, res) {
                 { header: "Email", key: "email", width: 30 },
                 { header: "Estado", key: "estado", width: 15 }
             ],
-            rows: users
+            rows: users,
         });
     } catch (err) {
         console.error(err);
@@ -182,7 +199,7 @@ async function getReportByStatusExcel(req, res) {
                 { header: "Email", key: "email", width: 30 },
                 { header: "Rol", key: "rol", width: 20 },
             ],
-            rows: users
+            rows: users,
         });
     } catch (err) {
         console.error(err);
@@ -235,7 +252,7 @@ async function getReportGeneralExcel(req, res) {
                 { header: "Rol", key: "rol_nombre", width: 20 },
                 { header: "Estado", key: "estado", width: 15 }
             ],
-            rows: users
+            rows: users,
         });
     } catch (err) {
         console.error(err);

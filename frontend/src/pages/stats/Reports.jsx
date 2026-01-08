@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ActionIcon, Box, Button, Card, Center, Checkbox, Divider, Group, Loader, Paper, Select, SimpleGrid, Stack, Text, Title} from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { toPng } from "html-to-image";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis } from "recharts";
 //Íconos
 import { IconX, IconArrowBackUp, IconFileTypePdf, IconFileTypeXls, IconInfoCircle } from "@tabler/icons-react";
 //Archivos
@@ -15,11 +17,20 @@ import '@mantine/core/styles.layer.css';
 
 export default function Reports() {
 
-    //const [role, setRole] = useState(null);
+    // const [role, setRole] = useState(null);
     const [reportType, setReportType] = useState(""); // General, Status, Rol
     const [paramValue, setParamValue] = useState("");
     const [includeChart, setIncludeChart] = useState(false);
+    // Datos
+    const [usersByRoleData, setUsersByRoleData] = useState([]);
+    const [usersByStatusData, setUsersByStatusData] = useState([]);
+    const [usersByAgeData, setUsersByAgeData] = useState([]);
+    const [loadingChartsData, setLoadingChartsData] = useState(false);
+    // Gráfica
     const [chartBase64, setChartBase64] = useState(""); // Gráfica
+    const roleChartRef = useRef(null);
+    const statusChartRef = useRef(null);
+    const ageChartRef = useRef(null);
 
     const navigate = useNavigate();
 
@@ -167,10 +178,51 @@ export default function Reports() {
         a.click();
 
         window.URL.revokeObjectURL(url);
-    };    
+    };
+
+    // Guardar cómo
+    const saveBlob = async (blob, fileName) => {
+        if (window.showSaveFilePicker) {
+            try {
+                const ext = fileName.split(".").pop()?.toLowerCase() || "";
+                const mime = blob.type ||
+                    (ext === "pdf" ? "application/pdf" :
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    );
+                
+                const handle = await window.showSaveFilePicker({
+                    name: fileName,
+                    types: [{
+                        description: ext === "pdf" ? "PDF" : "Excel",
+                        accept: { [mime]: [`.${ext}`] },
+                    }],
+                    excludeAcceptAllOption: false,
+                });
+
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+            } catch (err) {
+                if (err?.name === "AbortError") {
+                    return;
+                }
+                console.error("Fallo en showSaveFilePicker: ", err);
+            }
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    };
 
     // Obtener gráfica desde Graphics.jsx, ó considerar su reconstrucción aquí
     //
+    /*
     const handleGeneratePDF = async () => {
 
         if (!canGenerate) {
@@ -196,7 +248,66 @@ export default function Reports() {
         }
 
         const blob = await response.blob();
-        downloadFile(blob, `reporte_${reportType}_${paramValue || "general"}.pdf`);
+        saveBlob(blob, `reporte_${reportType}_${paramValue || "general"}.pdf`);
+    };
+    */
+
+    const handleGeneratePDF = async () => {
+
+        if (!canGenerate) {
+            return;
+        }
+
+        const endpoint = reportType === "general" ?
+            `/api/reports/users/general/pdf` : reportType === "role" ?
+            `/api/reports/users/role/${paramValue}/pdf` :
+            `/api/reports/users/status/${paramValue}/pdf`;
+        
+        let payload = {
+            includeChart,
+            chartBase64,
+        };
+
+        if (reportType === "general" && includeChart) {
+            if (loadingChartsData) {
+                notifications.show({
+                    title: "Espere por favor",
+                    message: "Cargando datos para las gráficas",
+                    color: "yellow",
+                });
+                return;
+            }
+
+            await new Promise((r) => setTimeout(r, 80));
+
+            const [roleImg, statusImg, ageImg] = await Promise.all([
+                captureChartBase64(roleChartRef),
+                captureChartBase64(statusChartRef),
+                captureChartBase64(ageChartRef),
+            ]);
+
+            payload = {
+                includeChart: true,
+                charts: {
+                    role: roleImg,
+                    status: statusImg,
+                    age: ageImg,
+                },
+            };
+        }
+
+        const response = await secureFetch(endpoint, {
+            method: "POST",
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            alert("Error generando reporte en pdf (frontend)");
+            return;
+        }
+
+        const blob = await response.blob();
+        await saveBlob(blob, `reporte_${reportType}_${paramValue || "general"}.pdf`);
     };
 
     // Finalizar
@@ -225,8 +336,68 @@ export default function Reports() {
         }
 
         const blob = await response.blob();
-        downloadFile(blob, `reporte_${reportType}_${paramValue || "general"}.xlsx`);
+        saveBlob(blob, `reporte_${reportType}_${paramValue || "general"}.xlsx`);
     };
+
+    const captureChartBase64 = async (ref) => {
+        if (!ref?.current) {
+            return null;
+        }
+
+        const dataUrl = await toPng(ref.current, {
+            cacheBust: true,
+            backgroundColor: "white",
+            pixelRatio: 2,
+        });
+        return dataUrl;
+    };
+
+    useEffect(() => {
+        const fetchChartsData = async () => {
+            if (!(reportType === "general" && includeChart)) {
+                return;
+            }
+
+            setLoadingChartsData(true);
+            try {
+                const [rolesRes, statusRes, ageRes] = await Promise.all([
+                    secureFetch("/api/users/stats/roles"),
+                    secureFetch("/api/users/stats/status"),
+                    secureFetch("/api/users/stats/age"),
+                ]);
+
+                if (!rolesRes.ok || !statusRes.ok || !ageRes.ok) {
+                    notifications.show({
+                        title: "Error",
+                        message: "No se pudieron obtener los datos para las gráficas",
+                        color: "red",
+                    });
+                    return;
+                }
+
+                const [rolesJson, statusJson, ageJson] = await Promise.all([
+                    rolesRes.json(),
+                    statusRes.json(),
+                    ageRes.json(),
+                ]);
+
+                setUsersByRoleData(rolesJson?.data || []);
+                setUsersByStatusData(statusJson?.data || []);
+                setUsersByAgeData(ageJson?.data || []);
+            } catch (err) {
+                console.error(err);
+                notifications.show({
+                    title: "Error",
+                    message: "Error inesperado cargando datos de gráficas (frontend)",
+                    color: "red",
+                });
+            } finally {
+                setLoadingChartsData(false);
+            }
+        };
+
+        fetchChartsData();
+    }, [reportType, includeChart]);
     
     return (
         <Box
@@ -325,7 +496,11 @@ export default function Reports() {
                 )}
 
                 <Checkbox
-                    label="Incluir gráfica en el reporte"
+                    label={
+                        reportType === "general" ?
+                        "Incluir gráficas en el reporte" :
+                        "Incluir gráfica en el reporte"
+                    }
                     checked={includeChart}
                     onChange={(e) => setIncludeChart(e.currentTarget.checked)}
                 />
@@ -359,63 +534,93 @@ export default function Reports() {
 
             </Stack>
             
-            {/* c
-            <Paper
-                p="lg"
-                shadow="md"
+            <div
+                style={{
+                    position: "fixed",
+                    left: "-100000px",
+                    top: 0,
+                    width: 900,
+                    height: 600,
+                    background: "white"
+                }}
             >
-                <Text
-                    fw={700}
-                    size="xl"
-                    mb="md"
+                <div
+                    ref={roleChartRef}
+                    style={{
+                        width: 900,
+                        height: 320,
+                        padding: 16
+                    }}
                 >
-                    Reportes por rol
-                </Text>
-
-                <Select
-                    label="Selecciona rol"
-                    placeholder="Elige un rol"
-                    radius="md"
-                    data={[
-                        { value: "1", label: "Administrador" },
-                        { value: "2", label: "Titular" },
-                        { value: "3", label: "Analista" },
-                    ]}
-                    value={role}
-                    onChange={setRole}
-                />
-
-                <Checkbox
-                    label="Incluir gráfica en el PDF"
-                    mt="md"
-                    checked={includeChart}
-                    onChange={(e) => setIncludeChart(e.currentTarget.checked)}
-                />
-
-                <Divider my="md" />
-
-                <Group>
-                    <Button
-                        variant="transparent"
-                        color="red"
-                        rightSection={<IconFileTypePdf />}
-                        //disabled={!role} // Qué roles se les permitirá ?
-                        onClick={handleGeneratePDF}
+                    {/* Rol */}
+                    <ResponsiveContainer
+                        width="100%"
+                        height="100%"
                     >
-                        Decargar
-                    </Button>
-                    <Button
-                        variant="transparent"
-                        color="green"
-                        rightSection={<IconFileTypeXls />}
-                        onClick={handleGenerateExcel}
-                    >
-                        Descargar
-                    </Button>
-                </Group>
+                        <PieChart>
+                            <Pie
+                                data={usersByRoleData}
+                                dataKey="value"
+                                nameKey="name"
+                                outerRadius={110}
+                                label
+                            />
+                            <RTooltip />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
 
-            </Paper>
-            */}
+                <div
+                    ref={statusChartRef}
+                    style={{
+                        width: 900,
+                        height: 320,
+                        padding: 16
+                    }}
+                >
+                    {/* Status */}
+                    <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                    >
+                        <PieChart>
+                            <Pie
+                                data={usersByStatusData}
+                                dataKey="value"
+                                nameKey="name"
+                                outerRadius={110}
+                                label
+                            />
+                            <RTooltip />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+
+                <div
+                    ref={ageChartRef}
+                    style={{
+                        width: 900,
+                        height: 360,
+                        padding: 16
+                    }}
+                >
+                    {/* Edad */}
+                    <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                    >
+                        <BarChart data={usersByAgeData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis allowDecimals={false} />
+                            <RTooltip />
+                            <Legend />
+                            <Bar dataKey="value" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+
+            </div>
 
         </Box>
     );
