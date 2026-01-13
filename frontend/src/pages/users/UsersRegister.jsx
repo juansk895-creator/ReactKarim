@@ -15,8 +15,18 @@ import { secureFetch } from "../../utils/secureFetch";
 
 
 //Helpers
-const nombres = [ "Sofía", "Regina", "María José", "Valentina", "Camila", "Santiago", "Mateo", "Sebastian", "Leonardo", "Matias" ];
-const apellidos = [ "Hernández", "García", "Martínez", "López", "González", "Pérez", "Rodríguez", "Sánchez", "Ramírez", "Cruz"];
+const nombres = [
+    "Sofía", "Regina", "María José", "Valentina", "Camila",
+    "Santiago", "Mateo", "Sebastian", "Leonardo", "Matias",
+    "Juan", "Alejandra", "María", "Carlos", "Ana",
+    "Luis", "Miguel", "Daniela", "Fernanda", "Ricardo",
+    "Eduardo", "Natalia", "Carolina", "Fernando", "Andrés"];
+const apellidos = [
+    "Hernández", "García", "Martínez", "López", "González",
+    "Pérez", "Rodríguez", "Sánchez", "Ramírez", "Cruz",
+    "Flores", "Gómez", "Morales", "Torres", "Jiménez",
+    "Reyes", "Díaz", "Mendoza", "Castillo", "Romero",
+    "Álvarez", "Ruiz", "Navarro", "Ortega", "Paredes"];
 
 function randomItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
@@ -290,16 +300,12 @@ export default function UsersRegister() {
     return (
         <Box
             p="md"
-            //w="100%"
             style={{
                 width: "100%",
                 height: "100%",
                 //backgroundColor: "darkred",
                 display: "flex",
                 flexDirection: "column",
-    
-                //maxWidth: "900px",
-                //margin: "0 auto",
             }}
         >
 

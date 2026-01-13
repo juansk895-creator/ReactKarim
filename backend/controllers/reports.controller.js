@@ -211,33 +211,6 @@ async function getReportGeneralExcel(req, res) {
     try {
         const users = await getReportGeneral();
 
-        //const workbook = new ExcelJS.Workbook();
-        //const sheet = workbook.addWorksheet("Usuarios");
-
-        /*sheet.columns = [
-            { header: "ID", key: "id", width: 8 },
-            { header: "Nombre", key: "nombre", width: 20 },
-            { header: "Apellido Paterno", key: "apellido_pat", width: 20 },
-            { header: "Apellido Materno", key: "apellido_mat", width: 20 },
-            { header: "Email", key: "email", width: 30 },
-            { header: "Rol", key: "rol_nombre", width: 20 },
-            { header: "Estado", key: "estado", width: 15 },
-        ];
-
-        users.forEach(u => sheet.addRow(u));
-
-        res.setHeader(
-            "Content-Disposition",
-            "attachment; filename=reporte_general_usuarios.xlsx"
-        );
-        res.setHeader(
-            "Content-Type",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        );
-
-        await workbook.xlsx.write(res);
-        res.end();*/
-
         await generateExcel({
             res,
             filename: "reporte_general_usuarios.xlsx",
@@ -245,14 +218,22 @@ async function getReportGeneralExcel(req, res) {
             title: "Reporte General de Usuarios",
             columns: [
                 { header: "ID", key: "id", width: 10 },
-                { header: "Nombre", key: "nombre", width: 20 },
-                { header: "Apellido Paterno", key: "apellido_pat", width: 20 },
-                { header: "Apellido Materno", key: "apellido_mat", width: 20 },
+                { header: "Nombre", key: "nombre_completo", width: 30 },
                 { header: "Email", key: "email", width: 30 },
+                { header: "Teléfono", key: "num_tel", width: 15 },
                 { header: "Rol", key: "rol_nombre", width: 20 },
-                { header: "Estado", key: "estado", width: 15 }
+                { header: "Estado", key: "estado", width: 15 },
+                { header: "Nacimiento", key: "fecha_nac_fmt", width: 15 },
             ],
-            rows: users,
+            //rows: users,
+            rows: users.map((u) => ({
+                ...u,
+                nombre_completo: `${u.nombre ?? ""} ${u.apellido_pat ?? ""} ${u.apellido_mat ?? ""}`
+                .replace(/\s+/g, " ")
+                .trim(),
+                fecha_nac_fmt: u.fecha_nac ?
+                new Date(u.fecha_nac).toISOString().slice(0, 10) : "",
+            })),
         });
     } catch (err) {
         console.error(err);

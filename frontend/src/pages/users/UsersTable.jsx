@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { ActionIcon, Badge, Box, Button, Card, Center, Flex, Group, Loader, Pagination, Select, Table, Text, TextInput, Title, Tooltip } from "@mantine/core";
 import { IconArrowsSort, IconEdit, IconPlus, IconSearch, IconTrash, IconArrowBackUp } from "@tabler/icons-react";
@@ -141,52 +141,45 @@ export default function UsersTable() {
             style={{
                 width: "100%",
                 height: "100%",
-                //backgroundColor: "darkred",
                 display: "flex",
                 flexDirection: "column",
-    
-                //maxWidth: "900px",
-                //margin: "0 auto",
             }}
         >
         <Group
             justify="space-between"
-            //align="center"
-            //mb="sm"
-            //mt="md"
         >
             
-                <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    //mb="md"
-                    title="Regresar"
-                    style={{
-                    cursor: "pointer",
-                    margintTop: "2px",
-                    }}
-                    //onClick={{handleBack}}
-                    onClick={() => navigate('/dashboard')}
-                >
-                    <IconArrowBackUp size={20} />
-                </ActionIcon>
-                <Title
-                    order={3}
-                    style={{
-                    flexGrow: 1,
-                    textAlign: "center",
-                    margin: 0,
-                    }}
-                >
-                    Usuarios
-                </Title>
-                <Button
-                    variant="outline"
-                    onClick={() => navigate('/dashboard/usersRegister')}
-                    leftSection={<IconPlus size={18} />}
-                >
-                    Nuevo usuario
-                </Button>
+            <ActionIcon
+                variant="subtle"
+                color="gray"
+                //mb="md"
+                title="Regresar"
+                style={{
+                cursor: "pointer",
+                margintTop: "2px",
+                }}
+                //onClick={{handleBack}}
+                onClick={() => navigate('/dashboard')}
+            >
+                <IconArrowBackUp size={20} />
+            </ActionIcon>
+            <Title
+                order={3}
+                style={{
+                flexGrow: 1,
+                textAlign: "center",
+                margin: 0,
+                }}
+            >
+                Usuarios
+            </Title>
+            <Button
+                variant="outline"
+                onClick={() => navigate('/dashboard/usersRegister')}
+                leftSection={<IconPlus size={18} />}
+            >
+                Nuevo usuario
+            </Button>
             
             
             <Table
@@ -324,6 +317,3 @@ export default function UsersTable() {
         </Box>
     );
 }
-
-
-
