@@ -20,6 +20,8 @@ const ALLOWED_SORT = {
     rol_id: 'u.rol_id',
     status_id: 'u.status_id',
     created_at: 'u.created_at',
+    rol_nombre: 'r.nombre',
+    estado: 's.estado',
 };
 
 
@@ -108,33 +110,65 @@ async function saveUser(req, res) {
 async function listUsers(req, res) {
 
     const page = Math.max(parseInt(req.query.page) || 1, 1);
-    const perPage = Math.min(Math.max(parseInt(req.query.perPage) || 10, 1), 100);
-    const sortBy = ALLOWED_SORT[req.query.sortBy] || 'u.created_at';
-    const sortDir = (req.query.sortDir || '').toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    const rawPerPage = parseInt(req.query.perPage || req.query.pageSize) || 10;
+    //const perPage = Math.min(Math.max(parseInt(req.query.perPage) || 10, 1), 100);
+    const perPage = Math.min(Math.max(rawPerPage, 1), 100);
+    
+    const sortBy = req.query.sortBy || "created_at";
+    const sortBySql = ALLOWED_SORT[sortBy] || "u.created_at";
+    const sortDir = (req.query.sortDir || "").toLowerCase() === "asc" ? "ASC" : "DESC";
     const offset = (page - 1) * perPage;
 
     const params = [];
-    let where = 'WHERE 1=1';
+    let where = "WHERE 1=1";
 
     if (req.query.role) {
         params.push(req.query.role);
-        where += `AND u.rol_id = $${params.length}`;
+        where += ` AND u.rol_id = $${params.length}`;
     }
     if (req.query.status) {
         params.push(req.query.status);
-        where += `AND u.status_id = $${params.length}`;
+        where += ` AND u.status_id = $${params.length}`;
     }
     if (req.query.q) {
-        params.push(`%${req.query.q}%`);
-        where += `AND (u.nombre ILIKE $${params.length} OR u.email ILIKE $${params.length} OR u.num_tel ILIKE $${params.length})`;
+        const q = `%${req.query.q}%`;
+        params.push(q);
+        //params.push(`%${req.query.q}%`);
+        //where += ` AND (u.nombre ILIKE $${params.length} OR u.email ILIKE $${params.length} OR u.num_tel ILIKE $${params.length})`;
+        where += ` AND (
+            u.nombre ILIKE $${params.length}
+            OR u.apellido_pat ILIKE $${params.length}
+            OR u.apellido_mat ILIKE $${params.length}
+            OR u.email ILIKE $${params.length}
+            OR u.num_tel ILIKE $${params.length}
+            OR r.nombre ILIKE $${params.length}
+            OR s.estado ILIKE $${params.length}
+        )`;
     }
 
-    const countSql = `SELECT COUNT(*)::int AS count FROM users u ${where}`;
-    const dataSql = `
-        SELECT u.id, u.nombre, u.email, u.num_tel, u.rol_id, u.status_id
+    const fromSql = `
         FROM users u
+        LEFT JOIN roles r ON r.id = u.rol_id
+        LEFT JOIN status s ON s.id = u.status_id
         ${where}
-        ORDER BY ${sortBy} ${sortDir}
+    `;
+
+    //const countSql = `SELECT COUNT(*)::int AS count FROM users u ${where}`;
+    const countSql = `SELECT COUNT(*)::int AS count ${fromSql}`;
+    
+    const dataSql = ` SELECT
+        u.id,
+        u.nombre,
+        u.apellido_pat,
+        u.apellido_mat,
+        u.email,
+        u.num_tel,
+        u.rol_id,
+        u.status_id,
+        r.nombre AS  rol_nombre,
+        s.estado AS estado
+        ${fromSql}
+        ORDER BY ${sortBySql} ${sortDir}
         LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `;
 
@@ -146,21 +180,21 @@ async function listUsers(req, res) {
         const dataRes = await client.query(dataSql, dataParams);
 
         res.json({
+            ok: true,
             users: dataRes.rows,
             page,
             perPage,
             total,
             totalPages: Math.max(1, Math.ceil(total / perPage)),
-            sortBy: Object.keys(ALLOWED_SORT).find(k => ALLOWED_SORT[k] === sortBy) || 'created_at',
+            sortBy, //: Object.keys(ALLOWED_SORT).find(k => ALLOWED_SORT[k] === sortBy) || 'created_at',
             sortDir: sortDir.toLowerCase(),
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error interno del servidor'});
+        res.status(500).json({ ok: false, error: 'Error interno del servidor (users.controller)'});
     } finally {
         client.release();
     }
-
 }
 
 async function getUser(req, res) {

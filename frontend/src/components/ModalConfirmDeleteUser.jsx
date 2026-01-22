@@ -15,7 +15,7 @@ export default function ModalConfirmDeleteUser({
             opened={opened}
             onClose={onClose}
             withinPortal
-            title="Eliminación de usuario"
+            title="Eliminar usuario"
             withCloseButton
             closeButtonProps={{
                 icon: <IconXboxX size={20} stroke={1.5} />,
@@ -73,7 +73,7 @@ export default function ModalConfirmDeleteUser({
             trapFocus
         >
             <Text mb="md">
-                Confirma eliminación del usuario {" "}
+                ¿ Está seguro de eliminar la información del usuario {" "}
                 <strong>{userName}</strong> ?
                 Esta acción no puede deshacerse
             </Text>

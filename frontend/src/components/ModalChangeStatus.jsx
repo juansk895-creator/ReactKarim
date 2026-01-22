@@ -24,7 +24,7 @@ export default function ModalChangeStatus({
             opened={opened}
             onClose={onClose}
             withinPortal
-            title="Cambio de estado"
+            title="Cambiar estado"
             withCloseButton
             closeButtonProps={{
                 icon: <IconXboxX size={20} stroke={1.5} />,
