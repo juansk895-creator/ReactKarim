@@ -4,7 +4,8 @@ import jwt from "jsonwebtoken";
 import { hashPassword, comparePassword } from '../utils/encrypt.js';
 //createUser,getUserByEmail,getUserById,updateUser,deleteUser,getUsers
 import { createUser,getUserByEmail,getUserById,updateUser,updatePassword,
-    deleteUser, getStatsRoles, getStatsStatus, getStatsAge, getUsers } from '../models/users.model.js';
+    deleteUser, getStatsRoles, getStatsStatus, getStatsAge, getUsers,
+    getUserByIdForProfile, updateUserProfileById } from '../models/users.model.js';
 
 import { pool } from "../db.js";
 import { generateToken } from "../utils/jwt.js";
@@ -50,6 +51,47 @@ async function login(req, res) {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error interno'});
+    }
+}
+
+async function getMe(req, res) {
+    try {
+        const userId = req.user.id;
+        const user = await getUserByIdForProfile(userId);
+
+        if (!user) {
+            return res.status(404).json({ ok: false, message: "Usuario no encontrado (backend)" });
+        }
+        return res.json({ ok: true, user });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ ok: false, message: "Error obteniendo perfil (backend)" });
+    }
+}
+
+async function updateMe(req, res) {
+    try {
+        const userId = req.user.id;
+
+        const { nombre, apellido_pat, apellido_mat, email, num_tel, fecha_nac } = req.body;
+
+        if (!nombre || !apellido_pat || !email) {
+            return res.status(400).json({ ok: false, message: "Faltan campos obligatorios (no llegaron al backend)" });
+        }
+
+        const updated = await updateUserProfileById(userId, {
+            nombre,
+            apellido_pat,
+            apellido_mat,
+            email,
+            num_tel,
+            fecha_nac,
+        });
+
+        return res.json({ ok: true, user: updated });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ ok: false, message: "Error actualizando perfil (backend)" });
     }
 }
 
@@ -267,6 +309,7 @@ async function updatePasswordC(req, res) {
 
         const match = await comparePassword(currentPassword, user.password);
         if (!user) {
+        //if (!match) {
             return res.status(403).json({ message: "Contraseña actual incorrecta" });
         }
 
@@ -327,6 +370,8 @@ async function getStatsAgeC(req, res) {
 
 export {
     login,
+    getMe,
+    updateMe,
     saveUser,
     updateStatusC,
     updatePasswordC,

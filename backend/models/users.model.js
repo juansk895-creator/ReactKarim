@@ -16,14 +16,47 @@ async function createUser(nombre, apellido_pat, apellido_mat, email, num_tel, pa
     return rows[0];
 }
 
-/*async function createUser({ name, email, password, role = 'user', status = 'activo', }) {
+async function getUserByIdForProfile(userId) {
     const sql = `
-        INSERT INTO users (name, email, password, role, status, created_at)
+        SELECT
+            id, nombre, apellido_pat, apellido_mat, email, num_tel, fecha_nac
+        FROM users
+        WHERE id = $1
+        LIMIT 1
     `;
-    const values = [name, email, password, role, status];
-    const { rows } = await pool.query(sql, values);
+    const { rows } = await pool.query(sql, [userId]);
+    return rows[0] || null;
+}
+
+async function updateUserProfileById(userId, data) {
+    const sql = `
+        UPDATE users
+        SET
+            nombre = $1,
+            apellido_pat = $2,
+            apellido_mat = $3,
+            email = $4,
+            num_tel = $5,
+            fecha_nac = $6,
+            updated_at = NOW()
+        WHERE id = $7
+        RETURNING
+            id, nombre, apellido_pat, apellido_mat, email, num_tel, fecha_nac
+    `;
+
+    const params = [
+        data.nombre,
+        data.apellido_pat,
+        data.apellido_mat ?? "",
+        data.email,
+        data.num_tel ?? "",
+        data.fecha_nac ?? null,
+        userId,
+    ];
+
+    const { rows } = await pool.query(sql, params);
     return rows[0];
-}*/
+}
 
 async function getUserByEmail(email) {
     const { rows } = await pool.query(
@@ -247,6 +280,8 @@ async function getReportGeneral() {
 
 export {
     createUser,
+    getUserByIdForProfile,
+    updateUserProfileById,
     getUserByEmail,
     getUserById,
     updateUser,

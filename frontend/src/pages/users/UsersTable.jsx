@@ -7,9 +7,8 @@ import { IconArrowBackUp, IconArrowsSort, IconChevronDown, IconChevronUp, IconEd
 import '@mantine/dates/styles.css';
 import '@mantine/core/styles.css';
 import '@mantine/core/styles.layer.css';
-//
-import { AuthContext } from "../../AuthContext";
 //Archivos
+import { AuthContext } from "../../AuthContext";
 import ModalChangeStatus from "../../components/ModalChangeStatus";
 import ModalConfirmDeleteUser from "../../components/ModalConfirmDeleteUser";
 

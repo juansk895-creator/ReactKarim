@@ -250,6 +250,7 @@ export default function Dashboard() {
               onClick={() => {
                 setActiveItem("perfil");
                 setShowStats((prev) => false);
+                navigate("/dashboard/profile");
               }}
             />
 

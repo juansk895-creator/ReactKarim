@@ -14,6 +14,13 @@ router.post('/login', usersCtrl.login);
 // Lista de usuarios
 router.get('/', verifyToken, requireAdmin, usersCtrl.listUsers);
 
+//PERFIL
+router.get('/me', verifyToken, usersCtrl.getMe);
+router.patch('/me', verifyToken, usersCtrl.updateMe);
+router.patch('/me/password', verifyToken, usersCtrl.updatePasswordC);
+router.patch('/me/status', verifyToken, usersCtrl.updateStatusC);
+router.delete('/me', verifyToken, usersCtrl.deleteUserC);
+
 //ESTADÍSTICAS - Revisar cuestión de permisos
 router.get('/stats/roles', verifyToken, requireAdmin, usersCtrl.getStatsRolesC);
 router.get('/stats/status', verifyToken, requireAdmin, usersCtrl.getStatsStatusC);
