@@ -42,8 +42,11 @@ CREATE TABLE users (
 -- tabla bitacora_users, registro de cambios en la tabla de usuarios (log del crud)
 CREATE TABLE bitacora_users (
     ID SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    accion VARCHAR(50) NOT NULL,
+    responsable_id INT,
+    responsable_nombre TEXT,
+    objetivo_id INT,
+    objetivo_nombre TEXT,
+    accion TEXT NOT NULL,
     fecha_accion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -68,7 +71,7 @@ VALUES (
     'Bolaños',
     'juansk895@gmail.com',
     '9512566889',
-    '$2b$10$VpK3qjLtOaHgQY96n6GvGu9BsyG8Ed0OTKQZUs94x/Jn88aSzp7dG', -- hash de "admin123"
+    '$2a$12$ygXqHOSFxuB1HhNAgJsXMOiW6lcJ5xu12bG4X8rYbqh0QtzBEtbSW', -- hash de "admin123"
     '1994-03-18',
     (SELECT id FROM roles WHERE nombre = 'administrador'),
     (SELECT id FROM status WHERE estado = 'activo'),
@@ -76,6 +79,12 @@ VALUES (
 );
 
 -- Registro en bitácora
-INSERT INTO bitacora_users (user_id, accion) VALUES
-((SELECT id FROM users WHERE email = 'juansk895@gmail.com'), 'Registro de usuario');
+INSERT INTO bitacora_users (responsable_id, responsable_nombre, objetivo_id, objetivo_nombre, accion)
+VALUES (
+    1,
+    'Sistema',
+    1,
+    'Juan Antonio Gabriel Bolaños',
+    'Creación inicial de administrador'
+);
 

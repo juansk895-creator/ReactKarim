@@ -329,6 +329,7 @@ export default function Dashboard() {
               onClick={() => {
                 setActiveItem("historial");
                 setShowStats((prev) => false);
+                navigate("/dashboard/history");
               }}
             />
           </Stack>

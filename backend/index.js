@@ -5,9 +5,10 @@ import { pool } from './db.js';
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import authRoutes from "./routes/auth.routes.js";
-import usersRouter from "./routes/users.routes.js";
+import authRoutes from './routes/auth.routes.js';
+import usersRouter from './routes/users.routes.js';
 import reportRoutes from './routes/reports.routes.js';
+import logsRoutes from './routes/logs.routes.js';
 
 //dotenv.config(); // Revisar uso
 dotenv.config({ path: "./.env" }); // Revisar uso
@@ -35,6 +36,7 @@ app.use(express.json({ limit: "20mb" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRouter);
 app.use("/api/reports", reportRoutes);
+app.use("/api/logs", logsRoutes);
 
 //Test
 app.get("/api/test", async (req, res) => {
@@ -58,31 +60,4 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () =>
     console.log(`Servidor comunicado con el puerto ${PORT}`)
 );
-
-/*
-//Configuración de conexión a Postgres
-const pool = new Pool({
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    host:process.env.POSTGRES_HOST,
-    port:process.env.POSTGRES_PORT,
-    database:process.env.POSTGRES_DB
-});
-
-//Testeo de conexión
-pool.connect()
-    .then(() => console.log("Conectado a Postgres"))
-    .catch(err => console.error("Error de conexión", err));
-
-//Primeras rutas
-app.get("/", (req, res) => {
-    res.send("Servidor Express funcionando");
-});
-
-//Iniciar servidor
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en http://localhost:${PORT}`);
-});
-*/
 

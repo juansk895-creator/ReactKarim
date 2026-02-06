@@ -38,7 +38,7 @@ export default function UsersTable() {
         fontWeight: isActiveSort(field) ? 700 : undefined,
         backgroundColor: isActiveSort(field) ? "#243b49" : undefined,
         borderRadius: isActiveSort(field) ? 4 : undefined,
-        transition: "background-color 0.15s ease",
+        transition: "background-color 0.5s ease",
     });
 
     const { secureFetch } = useContext(AuthContext);
@@ -279,7 +279,6 @@ export default function UsersTable() {
                     <Table.Tr>
                         <Table.Th
                             onClick={() => handleSort("nombre")}
-                            //style={{ cursor: "pointer" }}
                             style={ getHeaderStyle("nombre") }
                         >
                             <Tooltip label="Reordenar">

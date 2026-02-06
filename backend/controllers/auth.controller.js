@@ -80,6 +80,9 @@ export async function loginUser(req, res) {
             return res.status(400).json({ message: 'Se requiere email y contraseña'});
         }
         const user = await getUserByEmail(email);
+
+        //console.log("USER DB", user);
+
         if (!user) {
             return res.status(404).json({ message: 'Usuario no registrado'});
         }

@@ -1,6 +1,7 @@
 
-//const pool = require('../db.js'); //db.js debe exportar pool:
 import { pool } from "../db.js";
+import { registerBitacora } from "../utils/registerBitacora.js";
+
 const DEFAULT_PAGE_SIZE = 10;
 
 //User - nombre, apellido paterno, apellido materno, email, teléfono, password, 

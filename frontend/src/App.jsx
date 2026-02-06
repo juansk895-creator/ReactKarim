@@ -13,6 +13,7 @@ import UsersEdit from "./pages/users/UsersEdit.jsx";
 //rutas por testear
 import ProfileView from "./pages/profile/ProfileView.jsx";
 import ProfileEdit from "./pages/profile/ProfileEdit.jsx";
+import HistoryLogs from "./pages/logs/HistoryLogs.jsx";
 import Graphics from "./pages/stats/Graphics.jsx";
 import Reports from "./pages/stats/Reports.jsx";
 
@@ -40,6 +41,7 @@ export default function App() {
                             <Route path="usersEdit/:id" element={<UsersEdit />} />
                             <Route path="stats/graphics" element={<Graphics />} />
                             <Route path="stats/reports" element={<Reports />} />
+                            <Route path="history" element={<HistoryLogs />} />
                         </Route>
                     </Routes>
                 </Router>

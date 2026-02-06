@@ -11,7 +11,10 @@ export function generateToken(user) {
     const payload = {
         id: user.id,
         email: user.email,
-        rol_id: user.rol_id
+        rol_id: user.rol_id,
+        nombre: user.nombre,
+        apellido_pat: user.apellido_pat ?? null,
+        apellido_mat: user.apellido_mat ?? null,
     };
     return jwt.sign(payload, SECRET_KEY, { expiresIn: EXPIRES });
 }

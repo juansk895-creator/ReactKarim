@@ -2,11 +2,10 @@
 import jwt from "jsonwebtoken";
 //const jwt = require('jsonwebtoken');
 import { hashPassword, comparePassword } from '../utils/encrypt.js';
-//createUser,getUserByEmail,getUserById,updateUser,deleteUser,getUsers
 import { createUser,getUserByEmail,getUserById,updateUser,updatePassword,
     deleteUser, getStatsRoles, getStatsStatus, getStatsAge, getUsers,
     getUserByIdForProfile, updateUserProfileById } from '../models/users.model.js';
-
+import { registerBitacora } from "../utils/registerBitacora.js";
 import { pool } from "../db.js";
 import { generateToken } from "../utils/jwt.js";
 
@@ -79,6 +78,12 @@ async function updateMe(req, res) {
             return res.status(400).json({ ok: false, message: "Faltan campos obligatorios (no llegaron al backend)" });
         }
 
+        // revisar nombre de variable
+        const before = await getUserByIdForProfile(userId);
+        if (!before) {
+            return res.status(404).json({ ok: false, message: "Usuario no encontrado (backend)" });
+        }
+
         const updated = await updateUserProfileById(userId, {
             nombre,
             apellido_pat,
@@ -86,6 +91,24 @@ async function updateMe(req, res) {
             email,
             num_tel,
             fecha_nac,
+        });
+
+        // Para la bitácora
+        const changed = [];
+        if ((before.nombre ?? "") !== (updated.nombre ?? "")) changed.push("nombre");
+        if ((before.apellido_pat ?? "") !== (updated.apellido_pat ?? "")) changed.push("apellido paterno");
+        if ((before.apellido_mat ?? "") !== (updated.apellido_mat ?? "")) changed.push("apellido materno");
+        if ((before.email ?? "") !== (updated.email ?? "")) changed.push("email");
+        if ((before.num_tel ?? "") !== (updated.num_tel ?? "")) changed.push("teléfono");
+        if ((before.fecha_nac ?? "") !== (updated.fecha_nac ?? "")) changed.push("fecha de nacimiento");
+
+        const detalle = changed.length ? ` (${changed.join(", ")})` : "";
+
+        await registerBitacora({
+            responsable: req.user,
+            objetivo: updated,
+            accion: `Actualizó su perfil${detalle}` // Revisar detalle, al pickear un campo, sin cambio, igual lo considera
+            //accion: `Actualizó su perfil`
         });
 
         return res.json({ ok: true, user: updated });
@@ -125,7 +148,7 @@ async function saveUser(req, res) {
 
         const status_id = 1;
 
-        //
+        // users
         const user = await createUser(
             nombre,
             apellido_pat,
@@ -137,6 +160,12 @@ async function saveUser(req, res) {
             rol_id,
             status_id,
         );
+        // bitacora_users
+        await registerBitacora({
+            responsable: req.user,
+            objetivo: user,
+            accion: `Registró al usuario ${user.nombre}`
+        });
 
         res.status(201).json({
             message: "Usuario registrado con éxito",
@@ -264,7 +293,16 @@ async function updateUserC(req, res) {
             payload.password = await hashPassword(payload.password);
         }
 
+        // users
         const updated = await updateUser(id, payload);
+        // bitacora_users
+        if (updated) {
+            await registerBitacora({
+                responsable: req.user,
+                objetivo: updated,
+                accion: `Actualizó la información del usuario ${updated.nombre}`
+            });
+        }
         res.json(updated);
     } catch (err) {
         console.error(err);
@@ -281,16 +319,45 @@ async function updateStatusC(req, res) {
             return res.status(400).json({  message: "Estado inválido" });
         }
 
-        const updated = await updateUser(id, { status_id });
+        //
+        const before = await getUserById(id);
+        if (!before) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
 
+        const beforeStatusId = before.status_id;
+
+        // users
+        const updated = await updateUser(id, { status_id });
         if (!updated) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        // Texto personalizado para cada cambiod de estado
+        const statusActual = (sid) => (sid === 1 ? "Activo" : "Inactivo");
+        const accion = status_id === 1 ? "Reactivó" : "Desactivó";
+        //const cambio = `${statusActual(beforeStatusId)} -> ${statusActual(status_id)}`;
+
+        // bitacora_users
+        await registerBitacora({
+            responsable: req.user,
+            objetivo: updated,
+            accion: `${accion} al usuario ${updated.nombre}`// (estado: ${cambio})`
+        });
+
+        res.json({
+            message: "Estado actualizado con éxito",
+            user: updated
+        });
+
+        /*if (!updated) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
 
         res.json({
             message: "Estado actualizado con éxito",
             user: updated
-        });
+        });*/
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Error interno" });
@@ -308,13 +375,23 @@ async function updatePasswordC(req, res) {
         }
 
         const match = await comparePassword(currentPassword, user.password);
-        if (!user) {
-        //if (!match) {
+        //if (!user) { revisar validación
+        if (!match) {
             return res.status(403).json({ message: "Contraseña actual incorrecta" });
         }
 
+        // users
         const newHash = await hashPassword(newPassword);
         await updatePassword(id, newHash);
+        // bitacora_users
+        const isSelf = String(req.user.id) === String(id);
+        const accion = isSelf ? " actualizó su contraseña " : ` actualizó la contraseña del usuario ${user.nombre}`;
+
+        await registerBitacora({
+            responsable: req.user,
+            objetivo: user,
+            accion
+        });
 
         res.json({ message: "Contraseña actualizada" });
     } catch (err) {
@@ -325,13 +402,25 @@ async function updatePasswordC(req, res) {
 
 async function deleteUserC(req, res) {
     try {
+
         const id = req.params.id;
+        const user = await getUserById(id);
+        // users
         const deleted = await deleteUser(id);
+        
         if (!deleted) {
             return res.status(404).json({ message: 'Usuario no encontrado'});
-        } else {
+        }/* else {
             res.json({ message: 'Usuario eliminado', id: deleted.id});
-        }
+        }*/
+        // bitacora_users
+        await registerBitacora({
+            responsable: req.user,
+            objetivo: user,
+            accion: `Eliminó al usuario ${user.nombre}`
+        });
+
+        res.json({ message: 'Usuario eliminado', id: deleted.id });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error interno'});
@@ -371,14 +460,14 @@ async function getStatsAgeC(req, res) {
 export {
     login,
     getMe,
-    updateMe,
-    saveUser,
-    updateStatusC,
-    updatePasswordC,
+    updateMe, //
+    saveUser, //bitácora
+    updateStatusC, //bitácora
+    updatePasswordC, //
     listUsers,
     getUser,
-    updateUserC,
-    deleteUserC,
+    updateUserC, //bitácora
+    deleteUserC, //bitácora
     getStatsRolesC,
     getStatsStatusC,
     getStatsAgeC
